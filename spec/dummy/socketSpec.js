@@ -1,5 +1,5 @@
 describe("socket.io", function () {
-  it("should be able to communicate with socket.io-client", function () {
+  it("should be able to communicate with socket.io-client.", function () {
     var proof = "";
     var flag = "eqf4qF!$";
     runs(function () {
@@ -16,7 +16,7 @@ describe("socket.io", function () {
     });
     waits(50);
     runs(function () {
-      expect(proof).toBe(flag);
+      expect(proof).toEqual(flag);
     });
   });
 });

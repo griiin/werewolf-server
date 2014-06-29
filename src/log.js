@@ -67,18 +67,18 @@ function generateSuffix(typeName, args, settings) {
 
 function getCaller() {
   var firstStackLine = getStack().split('\n')[0];
-  var callerFuncPattern = /.*at\ (.*)\ \(.*\/(.*\.js)\:([0-9]+)\:([0-9]+)\)$/;
+  var callerFuncPattern = /.*at.*\/(.*\.js)\:([0-9]+)\:([0-9]+).*/;
   var tab = callerFuncPattern.exec(firstStackLine);
-  var caller = "\t" + color.grey(tab[2] + " > " + tab[1].underline) + " ";
-  caller += "[l".grey + tab[3] + ";c".grey + tab[4] + "]".grey;
+  var caller = "\t" + tab[1].grey.underline + " ";
+  caller += "[l".grey + tab[2] + ";c".grey + tab[3] + "]".grey;
 
   return caller;
 }
 
 function getStack() {
   var stack = new Error().stack;
-  var logFuncPattern = /.*at [getStack|log\.debug].*\/log\.js\:[0-9]+\:[0-9]+\)$/;
-  var nodeFuncPattern = /.*at.*\(.*[node|module]\.js\:[0-9]+\:[0-9]+\)$/;
+  var logFuncPattern = /.*at [getStack|log\.debug].*\/log\.js\:[0-9]+\:[0-9]+.*/;
+  var nodeFuncPattern = /.*at.*[node|module]\.js\:[0-9]+\:[0-9]+.*/;
   tab = stack.split('\n');
   _.remove(tab, function (line) {
     return line === "Error" || logFuncPattern.test(line) || nodeFuncPattern.test(line);
@@ -89,4 +89,4 @@ function getStack() {
   return stack;
 }
 
-module.exports = new log();
+module.exports = log;
