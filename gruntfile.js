@@ -13,27 +13,31 @@ module.exports = function(grunt) {
         }
       }
     },
-    jasmine: {
-      pivotal: {
-        src: 'src/**/*.js',
-        options: {
-          specs: 'spec/jasmine/*Spec.js',
-          template: require('grunt-template-jasmine-requirejs'),
-          templateOptions: {
-            requireConfigFile: 'src/app.js'
-          }
+    jasmine_node: {
+      options: {
+        forceExit: true,
+        match: '.',
+        matchall: false,
+        extensions: 'js',
+        specNameMatcher: 'spec',
+        jUnit: {
+          report: true,
+          savePath : "./build/reports/jasmine/",
+          useDotNotation: true,
+          consolidate: true
         }
-      }
+      },
+      all: ['spec/']
     },
     watch: {
       files: ['<%= jshint.files %>'],
-      tasks: ['jshint', 'jasmine']
+      tasks: ['jshint', 'jasmine_node']
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-jasmine');
+  grunt.loadNpmTasks('grunt-jasmine-node');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
-  grunt.registerTask('default', ['jshint', 'jasmine']);
+  grunt.registerTask('default', ['jshint', 'jasmine_node']);
 };
