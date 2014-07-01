@@ -89,4 +89,6 @@ function getStack() {
   return stack;
 }
 
-module.exports = log;
+module.exports = function () {
+  return new log();
+};

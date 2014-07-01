@@ -15,6 +15,9 @@ module.exports = function(grunt) {
     },
     jasmine_node: {
       options: {
+        includeStackTrace: false,
+        verbose: true,
+        showColors: true,
         forceExit: true,
         match: '.',
         matchall: false,

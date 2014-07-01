@@ -18,7 +18,7 @@ describe("Running server", function() {
     this.client = require('socket.io-client').connect('http://localhost:' + options.socketport);
   });
 
-  it("should handle new client connexion", function () {
+  it("should handle client connexion", function () {
     waits(50);
     runs(function () {
       expect(this.server.onClientConnexion).toHaveBeenCalled();

@@ -1,12 +1,9 @@
-var log = require('./log.js');
+var server = require('./server.js');
 var options = {
+  dbname: 'werewolf-dev-0001',
+  dbhost: '127.0.0.1',
+  dbport: 27017,
+  socketport: 4242
 };
-log = new log(options);
-
-var easyMongo = require('easymongo');
-var options = {
-    dbname: 'werewolf-dev-0001',
-    host: '127.0.0.1',
-    port: 27017
-};
-var mongo = new easyMongo(options);
+server = new server(options);
+server.run();
