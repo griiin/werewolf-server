@@ -1,4 +1,4 @@
-var server = require('./server.js');
+var server = require('./lib/server.js');
 var options = {
   dbname: 'werewolf-dev-0001',
   dbhost: '127.0.0.1',
