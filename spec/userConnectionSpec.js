@@ -52,7 +52,7 @@ describe("Running server", function() {
       });
 
       client.on('connect', function() {
-        client.emit('sign_up', 'hello');
+        client.emit('sign_up', { username: 'testman', password: 'plop', email: 'testman@test.com'});
         client.on('sign_up_response', function (data) {
           expect(data).toBe(true);
           client.disconnect();
