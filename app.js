@@ -6,4 +6,4 @@ var options = {
   socketport: 4242
 };
 server = new server(options);
-server.run();
+server.start();
