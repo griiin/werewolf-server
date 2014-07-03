@@ -44,14 +44,17 @@ describe("Running server", function() {
   it("should handle user sign up", function () {
     runs(function () {
       spyOn(require('../lib/userConnection/signUp'), 'signUp').andCallThrough();
+
       var client = require('socket.io-client').connect('http://localhost:' + this.options.socketport, {
         'reconnection delay' : 0,
         'reopen delay' : 0,
         'force new connection' : true
       });
+
       client.on('connect', function() {
-        client.emit('sign_up', null);
+        client.emit('sign_up', 'hello');
         client.on('sign_up_response', function (data) {
+          expect(data).toBe(true);
           client.disconnect();
         });
       });
@@ -61,24 +64,28 @@ describe("Running server", function() {
       expect(require('../lib/userConnection/signUp').signUp).toHaveBeenCalled();
     });
   });
-  it("should handle client Connection", function () {
-    waits(50);
+
+  it("should handle bad input while signing up", function () {
     runs(function () {
-      expect(this.server.onClientConnection).not.toHaveBeenCalled();
-    });
-    runs(function () {
+      spyOn(require('../lib/userConnection/signUp'), 'signUp').andCallThrough();
+
       var client = require('socket.io-client').connect('http://localhost:' + this.options.socketport, {
         'reconnection delay' : 0,
         'reopen delay' : 0,
         'force new connection' : true
       });
+
       client.on('connect', function() {
-        client.disconnect();
+        client.emit('sign_up', null);
+        client.on('sign_up_response', function (data) {
+          expect(data).toBe(false);
+          client.disconnect();
+        });
       });
     });
     waits(50);
     runs(function () {
-      expect(this.server.onClientConnection).toHaveBeenCalled();
+      expect(require('../lib/userConnection/signUp').signUp).toHaveBeenCalled();
     });
   });
 });
