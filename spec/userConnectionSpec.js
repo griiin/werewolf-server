@@ -65,7 +65,7 @@ describe("Running server", function() {
     });
   });
 
-  it("should handle bad input while signing up", function () {
+  it("should handle bad input while user sign up", function () {
     runs(function () {
       spyOn(require('../lib/userConnection/signUp'), 'signUp').andCallThrough();
 
