@@ -2,17 +2,19 @@ var color = require("colors");
 var moment = require("moment");
 var _ = require("lodash");
 var dico = {
-  "info":    {color: color.green,  output: "[ info  ]"},
-  "warning": {color: color.yellow, output: "[ warn  ]"},
-  "error":   {color: color.red,    output: "[ error ]"},
-  "debug":   {color: color.cyan,   output: "[ debug ]"},
-  "input":   {color: color.blue,   output: "[ input ]"}
+  "info":    {color: color.green,  output: "[nfo]"},
+  "warning": {color: color.yellow, output: "[wng]"},
+  "error":   {color: color.red,    output: "[err]"},
+  "debug":   {color: color.cyan,   output: "[dbg]"},
+  "input":   {color: color.blue,   output: "[ipt]"}
 };
 
 var log = function (options) {
   var defaults = {
     displayTime: true,
-    timeFormat: 'MM/DD/YYYY hh:mm:ss'
+    timeFormat: 'MM/DD/YYYY hh:mm:ss',
+    verbose: false,
+    debug: false
   };
   this.settings = _.extend(defaults, options);
 };
@@ -21,10 +23,18 @@ log.prototype.changeOptions = function (options) {
   _.extend(this.settings, options);
 };
 
+log.prototype.base = function (str) {
+  if (this.settings.verbose && !this.settings.debug) {
+    console.log(str.grey);
+  }
+};
+
 log.prototype.info = function () {
-  var args = Array.prototype.slice.call(arguments, 0);
-  var suffix = generateSuffix("info", args, this.settings);
-  this.logIt(args);
+  if (this.settings.verbose) {
+    var args = Array.prototype.slice.call(arguments, 0);
+    var suffix = generateSuffix("info", args, this.settings);
+    this.logIt(args);
+  }
 };
 
 log.prototype.warning = function () {
@@ -40,16 +50,20 @@ log.prototype.error = function () {
 };
 
 log.prototype.debug = function () {
-  var args = Array.prototype.slice.call(arguments, 0);
-  var suffix = generateSuffix("debug", args, this.settings);
-  this.logIt(args);
-  console.log(getCaller());
+  if (this.settings.debug) {
+    var args = Array.prototype.slice.call(arguments, 0);
+    var suffix = generateSuffix("debug", args, this.settings);
+    this.logIt(args);
+    console.log(getCaller());
+  }
 };
 
 log.prototype.input = function () {
-  var args = Array.prototype.slice.call(arguments, 0);
-  var suffix = generateSuffix("input", args, this.settings);
-  this.logIt(args);
+  if (this.settings.verbose || this.settings.debug) {
+    var args = Array.prototype.slice.call(arguments, 0);
+    var suffix = generateSuffix("input", args, this.settings);
+    this.logIt(args);
+  }
 };
 
 log.prototype.logIt = function (args) {
@@ -89,6 +103,11 @@ function getStack() {
   return stack;
 }
 
-module.exports = function () {
-  return new log();
+// singleton
+var instance;
+module.exports = function (options) {
+  if (!instance) {
+    instance = new log(options);
+  }
+  return instance;
 };
