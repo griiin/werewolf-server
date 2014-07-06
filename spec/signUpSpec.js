@@ -1,6 +1,6 @@
 var Q = require("Q");
 var _ = require("lodash");
-var log = require("../src/misc/log.js")({displayTime: false, verbose: true, debug: true});
+var log = require("../src/misc/log.js")({ displayTime: false, verbose: false, debug: false });
 
 describe("Server's Sign Up system", function() {
 

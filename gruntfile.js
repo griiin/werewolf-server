@@ -15,14 +15,11 @@ module.exports = function(grunt) {
     },
     jasmine_node: {
       options: {
-        includeStackTrace: false,
-        verbose: true,
-        showColors: true,
         forceExit: true,
         match: '.',
         matchall: false,
         extensions: 'js',
-        specNameMatcher: 'spec',
+        specNameMatcher: 'Spec',
         jUnit: {
           report: true,
           savePath : "./build/reports/jasmine/",
