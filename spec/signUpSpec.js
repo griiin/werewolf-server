@@ -1,6 +1,6 @@
 var Q = require("Q");
 var _ = require("lodash");
-var log = require("../src/misc/log.js")({ displayTime: false, verbose: false, debug: false });
+var log = require("../src/misc/log.js")();
 
 describe("Server's Sign Up system", function() {
 
@@ -118,7 +118,7 @@ describe("Server's Sign Up system", function() {
 
   it("should handle client Connection", function() {
     var done = false;
-    spyOn(require('../src/userConnection/signUp'), 'signUp').andCallThrough();
+    spyOn(require('../src/connection/signUp'), 'signUp').andCallThrough();
 
     runs(function() {
       connectAndSignUp(this.options.socketport)
@@ -133,12 +133,12 @@ describe("Server's Sign Up system", function() {
 
   it("should handle client sign up", function() {
     var done = false;
-    spyOn(require('../src/userConnection/signUp'), 'signUp').andCallThrough();
+    spyOn(require('../src/connection/signUp'), 'signUp').andCallThrough();
 
     runs(function() {
       connectAndSignUp(this.options.socketport)
       .then(_.bind(function (data) {
-        expect(this.server.onClientConnection).toHaveBeenCalled();
+        expect(require('../src/connection/signUp').signUp).toHaveBeenCalled();
         done = true;
       }, this))
       .done();
@@ -148,7 +148,6 @@ describe("Server's Sign Up system", function() {
 
   it("should create an user if informations are correct", function () {
     var done = false;
-    spyOn(require('../src/userConnection/signUp'), 'signUp').andCallThrough();
     var signUpInfo = {
       username: 'username',
       password: 'password',
@@ -159,7 +158,6 @@ describe("Server's Sign Up system", function() {
     runs(function() {
       connectAndSignUp(this.options.socketport, signUpInfo)
       .then(_.bind(function (data) {
-        expect(require('../src/userConnection/signUp').signUp).toHaveBeenCalled();
         expect(data.signUpResponseData.result).toBe(true);
         expectOneUserInDB(this.options)
         .then(function() {
@@ -276,7 +274,8 @@ describe("Server's Sign Up system", function() {
         .then(function (data) {
           expect(data.signUpResponseData.result).toBe(false);
           done = true;
-        });
+        })
+        .done();
       })
       .done();
     });

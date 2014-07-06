@@ -17,16 +17,22 @@ var log = function (options) {
     debug: false
   };
   this.settings = _.extend(defaults, options);
+
+  return this;
 };
 
-log.prototype.changeOptions = function (options) {
-  _.extend(this.settings, options);
+log.prototype.setOptions = function (options) {
+  this.settings = _.extend(this.settings, options);
+
+  return this;
 };
 
 log.prototype.base = function (str) {
   if (this.settings.verbose && !this.settings.debug) {
     console.log(str.grey);
   }
+
+  return this;
 };
 
 log.prototype.info = function () {
@@ -35,18 +41,24 @@ log.prototype.info = function () {
     var suffix = generateSuffix("info", args, this.settings);
     this.logIt(args);
   }
+
+  return this;
 };
 
 log.prototype.warning = function () {
   var args = Array.prototype.slice.call(arguments, 0);
   var suffix = generateSuffix("warning", args, this.settings);
   this.logIt(args);
+
+  return this;
 };
 
 log.prototype.error = function () {
   var args = Array.prototype.slice.call(arguments, 0);
   var suffix = generateSuffix("error", args, this.settings);
   this.logIt(args);
+
+  return this;
 };
 
 log.prototype.debug = function () {
@@ -56,6 +68,8 @@ log.prototype.debug = function () {
     this.logIt(args);
     console.log(getCaller());
   }
+
+  return this;
 };
 
 log.prototype.input = function () {
@@ -64,10 +78,14 @@ log.prototype.input = function () {
     var suffix = generateSuffix("input", args, this.settings);
     this.logIt(args);
   }
+
+  return this;
 };
 
 log.prototype.logIt = function (args) {
   console.log.apply(this, args);
+
+  return this;
 };
 
 function generateSuffix(typeName, args, settings) {
@@ -109,5 +127,6 @@ module.exports = function (options) {
   if (!instance) {
     instance = new log(options);
   }
+
   return instance;
 };

@@ -30,9 +30,15 @@ exports.signUp = function (data, socket, mongo) {
 };
 
 function CheckField(field, max) {
-  return typeof field == "string" && field.length >= 6 && field.length <= max;
+  return typeof field == "string" &&
+  field.length >= 6 &&
+  field.length <= max;
 }
 
 function CheckData(data) {
-  return !!data && CheckField(data.username, 42) && CheckField(data.password, 512) && CheckField(data.email, 42) && (data.gender === "male" || data.gender === "female");
+  return !!data &&
+  CheckField(data.username, 42) &&
+  CheckField(data.password, 512) &&
+  CheckField(data.email, 42) &&
+  (data.gender === "male" || data.gender === "female");
 }

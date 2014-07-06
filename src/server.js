@@ -1,4 +1,5 @@
 var _ = require('lodash');
+var Q = require("Q");
 var log;
 
 var server = function(options) {
@@ -9,7 +10,7 @@ var server = function(options) {
   };
   this.settings = _.extend(defaults, options);
   this.clients = [];
-  log = require('./misc/log.js')({
+  log = require('./misc/log.js')().setOptions({
     displayTime: this.settings.displayTime,
     verbose: this.settings.verbose,
     debug: this.settings.debug
@@ -50,6 +51,7 @@ server.prototype.stop = function () {
   this.http.close();
   log.info("[mdb] stopping");
   this.mongo.close();
+  log.info("byebye");
 };
 
 server.prototype.initializeDb = function () {
@@ -88,13 +90,18 @@ server.prototype.getClientInfo = function (socket) {
 server.prototype.onClientConnection = function (socket) {
   log.info("[usr] '" + this.getClientInfo(socket) + "' connected");
   this.clients.push(socket);
-  socket.on('sign_up', _.bind(function(data) {
-    log.input("[usr] '" + this.getClientInfo(socket) + "' sign_up", "\ndata:\n ", data);
-    require('./userConnection/signUp').signUp(data, socket, this.mongo);
-  }, this));
+  this.on(socket, 'sign_up', require('./connection/signUp').signUp);
+  this.on(socket, 'sign_in', require('./connection/signIn').signIn);
   socket.on('ping', function (data) {
     socket.emit('pong', null);
   });
+};
+
+server.prototype.on = function (socket, actionName, func) {
+  socket.on(actionName, _.bind(function(data) {
+    log.input("[usr] '" + this.getClientInfo(socket) + "' " + actionName, "\ndata:\n ", data);
+    func(data, socket, this.mongo);
+  }, this));
 };
 
 module.exports = server;
