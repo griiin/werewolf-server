@@ -65,6 +65,7 @@ describe("Server's Sign Up system", function() {
 
   function signUp(data) {
     var deferred = Q.defer();
+
     data.client.on('sign_up_response', function (signUpResponseData) {
       data.signUpResponseData = signUpResponseData;
       deferred.resolve(data);
@@ -249,28 +250,34 @@ describe("Server's Sign Up system", function() {
     });
     waitsFor(function () { return done; });
   });
-  
-  xit("should handle account with same username", function () {
+
+  it("should refuse account with same username", function () {
     var done = false;
-    var signUpInfoOne = {
+    var signUpInfoInnocentUser = {
       username: 'username',
       password: 'password',
       email: 'username@email.com',
       gender: 'male'
     };
-    var signUpInfoTwo = {
+    var signUpInfoEvilUser = {
       username: 'username',
-      password: 'password',
-      email: 'username@email.com',
-      gender: 'male'
+      password: 'password2',
+      email: 'username2@email.com',
+      gender: 'female'
     };
 
     runs(function() {
-      connectAndSignUp(this.options.socketport, signUpInfo)
-      .then(_.bind(function (data) {
-        expect(data.signUpResponseData.result).toBe(false);
-        done = true;
-      }, this))
+      var data = {port : this.options.socketport, signUpInfo: signUpInfoInnocentUser};
+      connectClient(data)
+      .then(signUp)
+      .then(function (data) {
+        data.signUpInfo = signUpInfoEvilUser;
+        signUp(data)
+        .then(function (data) {
+          expect(data.signUpResponseData.result).toBe(false);
+          done = true;
+        });
+      })
       .done();
     });
     waitsFor(function () { return done; });
