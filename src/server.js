@@ -70,7 +70,7 @@ server.prototype.startSocketServer = function () {
   this.http = require('http').Server(this.app);
   this.io = require('socket.io')(this.http);
 
-  this.io.on('connection', _.bind(this.onClientConnection, this));
+  this.io.on('connection', _.bind(this.onConnection, this));
 
   this.http.listen(this.settings.socketport, _.bind(function(){
     log.info('[sio] listening on port ' + this.settings.socketport);
@@ -87,20 +87,25 @@ server.prototype.getClientInfo = function (socket) {
   }
 };
 
-server.prototype.onClientConnection = function (socket) {
+server.prototype.onConnection = function (socket) {
   log.info("[usr] '" + this.getClientInfo(socket) + "' connected");
   this.clients.push(socket);
-  this.on(socket, 'sign_up', require('./connection/signUp').signUp);
-  this.on(socket, 'sign_in', require('./connection/signIn').signIn);
-  socket.on('ping', function (data) {
-    socket.emit('pong', null);
-  });
+  this.on(socket, 'sign_up', require('./connection/signUp').signUp, this.onLobby);
+  this.on(socket, 'sign_in', require('./connection/signIn').signIn, this.onLobby);
 };
 
-server.prototype.on = function (socket, actionName, func) {
+server.prototype.onLobby = function(user) {
+
+};
+
+server.prototype.onGame = function(user, game) {
+
+};
+
+server.prototype.on = function (socket, actionName, func, callback) {
   socket.on(actionName, _.bind(function(data) {
     log.input("[usr] '" + this.getClientInfo(socket) + "' " + actionName, "\ndata:\n ", data);
-    func(data, socket, this.mongo);
+    func(data, socket, this.mongo, callback);
   }, this));
 };
 

@@ -1,13 +1,13 @@
 var Q = require("Q");
 var log = require('../misc/log.js')();
 
-exports.signIn = function (data, socket, mongo) {
+exports.signIn = function (data, socket, mongo, callback) {
   if (!CheckData(data)) {
     log.info('[usr] sign_in failed');
     socket.emit("sign_in_response", {result: false, message: "INCORRECT_DATA"});
     return;
   }
-  tryToFindUser(data, socket, mongo)
+  tryToFindUser(data, socket, mongo, callback)
   .then(function (result) {
     log.info('[usr] sign_in => ', result);
     socket.emit("sign_in_response", result);
@@ -15,7 +15,7 @@ exports.signIn = function (data, socket, mongo) {
   .done();
 };
 
-function tryToFindUser(data, socket, mongo) {
+function tryToFindUser(data, socket, mongo, callback) {
   var deferred = Q.defer();
 
   var users = mongo.collection('users');
@@ -28,6 +28,7 @@ function tryToFindUser(data, socket, mongo) {
       if (user.password == data.password) {
         message = "";
         result = true;
+        callback({data: user, socket: socket});
       }
     }
     deferred.resolve({result: result, message: message});

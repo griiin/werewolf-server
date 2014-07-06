@@ -1,6 +1,6 @@
 var log = require('../misc/log.js')();
 
-exports.signUp = function (data, socket, mongo) {
+exports.signUp = function (data, socket, mongo, callback) {
   if (!CheckData(data)) {
     log.info('[usr] sign_up failed');
     socket.emit("sign_up_response", { result: false, message: "INCORRECT_DATA" });
@@ -18,10 +18,11 @@ exports.signUp = function (data, socket, mongo) {
       password: data.password,
       email: data.email,
       gender: data.gender
-    }, function (error, results) {
+    }, function (error) {
       if (!error) {
         log.info("[mdb] user saved");
         socket.emit("sign_up_response", { result: true });
+        callback({data: data, socket: socket});
       } else {
         log.info("[mdb] user save failed");
       }
