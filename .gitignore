@@ -31,4 +31,3 @@ node_modules
 # jasmine
 _SpecRunner.html
 build
-spec/dummy
