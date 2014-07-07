@@ -1,6 +1,6 @@
-var _ = require('lodash');
-var Q = require("Q");
-var log;
+var _ = require('lodash'),
+  Q = require("Q"),
+  log;
 
 var server = function(options) {
   var defaults = {
@@ -10,6 +10,8 @@ var server = function(options) {
   };
   this.settings = _.extend(defaults, options);
   this.clients = [];
+  this.users = [];
+  this.games = [];
   log = require('./misc/log.js')().setOptions({
     displayTime: this.settings.displayTime,
     verbose: this.settings.verbose,
@@ -76,6 +78,8 @@ server.prototype.startSocketServer = function () {
     log.info('[sio] listening on port ' + this.settings.socketport);
   }, this));
   this.clients = [];
+  this.users = [];
+  this.games = [];
 };
 
 server.prototype.getClientInfo = function (socket) {
@@ -88,24 +92,39 @@ server.prototype.getClientInfo = function (socket) {
 };
 
 server.prototype.onConnection = function (socket) {
-  log.info("[usr] '" + this.getClientInfo(socket) + "' connected");
-  this.clients.push(socket);
-  this.on(socket, 'sign_up', require('./connection/signUp').signUp, this.onLobby);
-  this.on(socket, 'sign_in', require('./connection/signIn').signIn, this.onLobby);
+  log.info("[usr] '" + this.getClientInfo(socket) + "' trying to connect");
+  if (!_(this.clients).contains(socket)) {
+    log.info("[usr] '" + this.getClientInfo(socket) + "' connected");
+    this.clients.push(socket);
+    this.on(socket, 'sign_up', require('./connection/signUp').signUp, _.bind(this.onLobby, this));
+    this.on(socket, 'sign_in', require('./connection/signIn').signIn, _.bind(this.onLobby, this));
+  } else {
+    log.info("[usr] '" + this.getClientInfo(socket) + "' already connected");
+  }
 };
 
 server.prototype.onLobby = function(user) {
-
+  if (!this.users[user.data.username]) {
+    log.info("[usr] '" + user.data.username + "' (" + this.getClientInfo(user.socket) + ") entering the lobby");
+    this.users[user.data.username] = user;
+    // this.on(user.socket, 'list_games', require('./lobby/listGames').signUp, this.games);
+    // this.on(user.socket, 'create_game', require('./lobby/createGame').signUp, this.games);
+    // this.on(user.socket, 'join_game', require('./lobby/joinGame').signUp, {games: this.games, callback: _.bind(this.onGame, this)});
+    // this.on(user.socket, 'leave_game', require('./lobby/leaveGame').signUp, this.games);
+  } else {
+    // log.info("[usr] '" + user.data.username + "' (" + this.getClientInfo(user.socket) + ") already in lobby");
+    // user.socket.disconnect();
+  }
 };
 
 server.prototype.onGame = function(user, game) {
-
+  log.error("user connected Oo");
 };
 
-server.prototype.on = function (socket, actionName, func, callback) {
+server.prototype.on = function (socket, actionName, func, additionalData) {
   socket.on(actionName, _.bind(function(data) {
     log.input("[usr] '" + this.getClientInfo(socket) + "' " + actionName, "\ndata:\n ", data);
-    func(data, socket, this.mongo, callback);
+    func(data, socket, this.mongo, additionalData);
   }, this));
 };
 

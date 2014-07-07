@@ -73,24 +73,4 @@ describe("Server's lobby system", function() {
     });
     waitsFor(function () { return done; });
   });
-  //
-  // it("should handle lobby connection", function() {
-  //     var done = false;
-  //     var signUpInfo = {
-  //       username: 'username',
-  //       password: 'password',
-  //       email: 'username@email.com',
-  //       gender: 'male'
-  //     };
-  //
-  //     runs(function() {
-  //       client.connectAndSignUp(this.options.socketport, signUpInfo)
-  //       .then(_.bind(function (data) {
-  //         expect(true).toBe(true);
-  //         // expect(this.server.onLobby).toHaveBeenCalled();
-  //       }, this))
-  //       .done();
-  //     });
-  //     waitsFor(function () { return done; });
-  // });
 });
