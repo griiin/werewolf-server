@@ -7,7 +7,6 @@ var client = function () {
 };
 
 client.prototype.connectClient = function (data) {
-  log.debug();
   var deferred = Q.defer();
   data.client = require('socket.io-client').connect('http://localhost:' + data.port, {
     'reconnection delay' : 0,

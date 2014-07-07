@@ -2,8 +2,9 @@ var Q = require("Q");
 var _ = require("lodash");
 var log = require("../../src/misc/log.js")();
 var client = require("../helper/client.js");
+var lobby = require("../helper/lobby.js");
 
-describe("Server's lobby system", function() {
+describe("Server's game creation system", function() {
 
   beforeEach(function() {
     // init server
@@ -15,10 +16,8 @@ describe("Server's lobby system", function() {
       socketport: 4248,
       displayTime: false,
       verbose: false,
-      debug: false
+      debug: true
     };
-
-    spyOn(server.prototype, 'onLobby').andCallThrough();
 
     this.server = new server(this.options);
     this.server.start();
@@ -50,7 +49,7 @@ describe("Server's lobby system", function() {
     });
   });
 
-  it("should handle client joining the lobby", function() {
+  it("should call createGame module when a client try to create a game", function() {
     var done = false;
     var data = {
       port : this.options.socketport,
@@ -59,14 +58,51 @@ describe("Server's lobby system", function() {
         password: 'password',
         email: 'username@email.com',
         gender: 'male'
+      },
+      createGameInfo: {
+        password: "xyz",
+        language: "FR",
+        classes: []
+      }
+    };
+    spyOn(require('../../src/lobby/createGame'), 'createGame').andCallThrough();
+
+    runs(function() {
+      client.connectClient(data)
+      .then(client.signUp)
+      .then(lobby.createGame)
+      .then(_.bind(function (data) {
+        expect(require('../../src/lobby/createGame').createGame).toHaveBeenCalled();
+        done = true;
+      }, this))
+      .done();
+    });
+    waitsFor(function () { return done; });
+  });
+
+  it("should handle game create from a client", function() {
+    var done = false;
+    var data = {
+      port : this.options.socketport,
+      signUpInfo: {
+        username: 'username',
+        password: 'password',
+        email: 'username@email.com',
+        gender: 'male'
+      },
+      createGameInfo: {
+        password: "xyz",
+        language: "FR",
+        classes: []
       }
     };
 
     runs(function() {
       client.connectClient(data)
       .then(client.signUp)
+      .then(lobby.createGame)
       .then(_.bind(function (data) {
-        expect(this.server.onLobby).toHaveBeenCalled();
+        expect(data.createGameResponseData.result).toBe(true);
         done = true;
       }, this))
       .done();

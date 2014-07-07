@@ -1,6 +1,6 @@
 var _ = require('lodash'),
-  Q = require("Q"),
-  log;
+Q = require("Q"),
+log;
 
 var server = function(options) {
   var defaults = {
@@ -107,10 +107,10 @@ server.prototype.onLobby = function(user) {
   if (!this.users[user.data.username]) {
     log.info("[usr] '" + user.data.username + "' (" + this.getClientInfo(user.socket) + ") entering the lobby");
     this.users[user.data.username] = user;
-    // this.on(user.socket, 'list_games', require('./lobby/listGames').signUp, this.games);
-    // this.on(user.socket, 'create_game', require('./lobby/createGame').signUp, this.games);
-    // this.on(user.socket, 'join_game', require('./lobby/joinGame').signUp, {games: this.games, callback: _.bind(this.onGame, this)});
-    // this.on(user.socket, 'leave_game', require('./lobby/leaveGame').signUp, this.games);
+    this.on(user.socket, 'list_games', require('./lobby/listGames').listGames, this.games);
+    this.on(user.socket, 'create_game', require('./lobby/createGame').createGame, this.games);
+    // this.on(user.socket, 'join_game', require('./lobby/joinGame').joinGame, {games: this.games, callback: _.bind(this.onGame, this)});
+    // this.on(user.socket, 'leave_game', require('./lobby/leaveGame').leaveGame, this.games);
   } else {
     // log.info("[usr] '" + user.data.username + "' (" + this.getClientInfo(user.socket) + ") already in lobby");
     // user.socket.disconnect();
