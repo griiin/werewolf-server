@@ -106,9 +106,11 @@ server.prototype.onConnection = function (socket) {
 server.prototype.onLobby = function(user) {
   if (!this.users[user.data.username]) {
     log.info("[usr] '" + user.data.username + "' (" + this.getClientInfo(user.socket) + ") entering the lobby");
+    user.rolesLoaded = false;
     this.users[user.data.username] = user;
-    this.on(user.socket, 'list_games', require('./lobby/listGames').listGames, this.games);
-    this.on(user.socket, 'create_game', require('./lobby/createGame').createGame, this.games);
+    this.on(user, 'list_roles', require('./lobby/listRoles').listRoles);
+    this.on(user, 'create_game', require('./lobby/createGame').createGame, this.games);
+    // this.on(user.socket, 'list_games', require('./lobby/listGames').listGames, this.games);
     // this.on(user.socket, 'join_game', require('./lobby/joinGame').joinGame, {games: this.games, callback: _.bind(this.onGame, this)});
     // this.on(user.socket, 'leave_game', require('./lobby/leaveGame').leaveGame, this.games);
   } else {
@@ -121,10 +123,13 @@ server.prototype.onGame = function(user, game) {
   log.error("user connected Oo");
 };
 
-server.prototype.on = function (socket, actionName, func, additionalData) {
+server.prototype.on = function (client, actionName, func, additionalData) {
+  // client can be the identified user, or (if not identified yet) the socket
+  var socket = client.socket ? client.socket : client;
+
   socket.on(actionName, _.bind(function(data) {
     log.input("[usr] '" + this.getClientInfo(socket) + "' " + actionName, "\ndata:\n ", data);
-    func(data, socket, this.mongo, additionalData);
+    func(data, client, this.mongo, additionalData);
   }, this));
 };
 

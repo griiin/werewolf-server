@@ -18,4 +18,16 @@ lobby.prototype.createGame = function (data) {
   return deferred.promise;
 };
 
+lobby.prototype.listRoles = function (data) {
+  var deferred = Q.defer();
+
+  data.client.on("list_roles_response", function (listRolesResponseData) {
+    data.listRolesResponseData = listRolesResponseData;
+    deferred.resolve(data);
+  });
+  data.client.emit("list_roles");
+
+  return deferred.promise;
+};
+
 module.exports = new lobby();

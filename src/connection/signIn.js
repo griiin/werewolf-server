@@ -2,7 +2,7 @@ var Q = require("Q");
 var log = require('../misc/log.js')();
 
 exports.signIn = function (data, socket, mongo, callback) {
-  if (!CheckData(data)) {
+  if (!VerifyData(data)) {
     log.info('[usr] sign_in failed');
     socket.emit("sign_in_response", {result: false, message: "INCORRECT_DATA"});
     return;
@@ -43,7 +43,7 @@ function CheckField(field, max) {
   field.length <= max;
 }
 
-function CheckData(data) {
+function VerifyData(data) {
   return !!data &&
   CheckField(data.username, 42) &&
   CheckField(data.password, 512);

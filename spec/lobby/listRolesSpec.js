@@ -1,10 +1,10 @@
-var Q = require("Q");
-var _ = require("lodash");
-var log = require("../../src/misc/log.js")();
-var client = require("../helper/client.js");
-var lobby = require("../helper/lobby.js");
+var Q = require("Q"),
+_ = require("lodash"),
+log = require("../../src/misc/log.js")(),
+client = require("../helper/client.js"),
+lobby = require("../helper/lobby.js");
 
-describe("Server's game creation system", function() {
+describe("Server's list roles system", function() {
 
   beforeEach(function() {
     // init server
@@ -49,7 +49,7 @@ describe("Server's game creation system", function() {
     });
   });
 
-  it("should call createGame module when a client try to create a game", function() {
+  it("should call listRoles module when a client ask for them", function() {
     var done = false;
     var data = {
       port : this.options.socketport,
@@ -58,21 +58,16 @@ describe("Server's game creation system", function() {
         password: 'password',
         email: 'username@email.com',
         gender: 'male'
-      },
-      createGameInfo: {
-        password: "xyz",
-        language: "FR",
-        roles: []
       }
     };
-    spyOn(require('../../src/lobby/createGame'), 'createGame').andCallThrough();
+    spyOn(require('../../src/lobby/listRoles'), 'listRoles').andCallThrough();
 
     runs(function() {
       client.connectClient(data)
       .then(client.signUp)
-      .then(lobby.createGame)
+      .then(lobby.listRoles)
       .then(_.bind(function (data) {
-        expect(require('../../src/lobby/createGame').createGame).toHaveBeenCalled();
+        expect(require('../../src/lobby/listRoles').listRoles).toHaveBeenCalled();
         done = true;
       }, this))
       .done();
@@ -80,7 +75,7 @@ describe("Server's game creation system", function() {
     waitsFor(function () { return done; });
   });
 
-  it("should handle game create from a client", function() {
+  it("should send the roles to the user", function() {
     var done = false;
     var data = {
       port : this.options.socketport,
@@ -89,20 +84,15 @@ describe("Server's game creation system", function() {
         password: 'password',
         email: 'username@email.com',
         gender: 'male'
-      },
-      createGameInfo: {
-        password: "xyz",
-        language: "FR",
-        roles: []
       }
     };
 
     runs(function() {
       client.connectClient(data)
       .then(client.signUp)
-      .then(lobby.createGame)
+      .then(lobby.listRoles)
       .then(_.bind(function (data) {
-        expect(data.createGameResponseData.result).toBe(true);
+        expect(data.listRolesResponseData.result).toBe(true);
         done = true;
       }, this))
       .done();
@@ -110,7 +100,7 @@ describe("Server's game creation system", function() {
     waitsFor(function () { return done; });
   });
 
-  xit("should refuse game creation ", function() {
+  it("should refuse to send the roles more than one time", function() {
     var done = false;
     var data = {
       port : this.options.socketport,
@@ -119,20 +109,16 @@ describe("Server's game creation system", function() {
         password: 'password',
         email: 'username@email.com',
         gender: 'male'
-      },
-      createGameInfo: {
-        password: "xyz",
-        language: "FR",
-        roles: []
       }
     };
 
     runs(function() {
       client.connectClient(data)
       .then(client.signUp)
-      .then(lobby.createGame)
+      .then(lobby.listRoles)
+      .then(lobby.listRoles)
       .then(_.bind(function (data) {
-        expect(data.createGameResponseData.result).toBe(true);
+        expect(data.listRolesResponseData.result).toBe(false);
         done = true;
       }, this))
       .done();

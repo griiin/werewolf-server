@@ -1,7 +1,7 @@
 var log = require('../misc/log.js')();
 
 exports.signUp = function (data, socket, mongo, callback) {
-  if (!CheckData(data)) {
+  if (!VerifyData(data)) {
     log.info('[usr] sign_up failed');
     socket.emit("sign_up_response", { result: false, message: "INCORRECT_DATA" });
     return;
@@ -36,7 +36,7 @@ function CheckField(field, max) {
   field.length <= max;
 }
 
-function CheckData(data) {
+function VerifyData(data) {
   return !!data &&
   CheckField(data.username, 42) &&
   CheckField(data.password, 512) &&
