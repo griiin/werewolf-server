@@ -1,6 +1,7 @@
 var _ = require('lodash'),
 Q = require("Q"),
-log = require('../misc/log.js')();
+log = require('../misc/log.js')(),
+roles = require('../roles/ARole');
 
 exports.listRoles = function (data, user, mongo) {
   if (!user.rolesLoaded) {
