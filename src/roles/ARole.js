@@ -6,10 +6,4 @@ var ARole = function () {
 
 };
 
-ARole.getRoles = function () {
-  return [
-    require('./town/Citizen').prototype.name
-  ];
-};
-
 module.exports = ARole;

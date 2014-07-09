@@ -7,6 +7,8 @@ var ATown = function () {
 
 };
 
-_.extend(ATown.prototype, ARole.prototype);
+ATown.team = 'town';
+
+_.extend(ATown, ARole);
 
 module.exports = ATown;

@@ -7,8 +7,12 @@ var Citizen = function () {
 
 };
 
-Citizen.prototype.name = 'citizen';
+Citizen.prototype.specialPower = function () {
+  log.error("Bazinga!");
+};
 
-_.extend(Citizen.prototype, ATown.prototype);
+Citizen.roleName = 'citizen';
+
+_.extend(Citizen, ATown);
 
 module.exports = Citizen;
