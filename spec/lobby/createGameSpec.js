@@ -14,7 +14,7 @@ describe("Server's game creation system", function() {
 
   afterEach(serverHelper.clearAll);
 
-  jh.xit("should call createGame module when a client try to create a game", function(callback) {
+  jh.it("should call createGame module when a client try to create a game", function(callback) {
     var data = {
       port : this.options.socketport,
       createGameInfo: {
@@ -36,15 +36,9 @@ describe("Server's game creation system", function() {
     .done();
   }, this);
 
-  jh.xit("should handle game create from a client", function(callback) {
+  jh.it("should handle game create from a client", function(callback) {
     var data = {
       port : this.options.socketport,
-      signUpInfo: {
-        username: 'username',
-        password: 'password',
-        email: 'username@email.com',
-        gender: 'male'
-      },
       createGameInfo: {
         password: "xyz",
         language: "FR",
@@ -66,16 +60,31 @@ describe("Server's game creation system", function() {
   jh.it("should refuse game creation if there is less than 6 roles", function(callback) {
     var data = {
       port : this.options.socketport,
-      signUpInfo: {
-        username: 'username',
-        password: 'password',
-        email: 'username@email.com',
-        gender: 'male'
-      },
       createGameInfo: {
         password: "xyz",
         language: "FR",
         roles: []
+      }
+    };
+
+    client.connectClient(data)
+    .then(client.signUp)
+    .then(lobby.createGame)
+    .then(_.bind(function (data) {
+      expect(data.createGameResponseData.result).toBe(false);
+      callback();
+    }, this))
+    .done();
+  }, this);
+
+  jh.it("should refuse game creation if we tried to add an unknown role", function(callback) {
+    var data = {
+      port : this.options.socketport,
+      createGameInfo: {
+        password: "xyz",
+        language: "FR",
+        roles: [{roleName: 'peasant', nb: 5},
+        {roleName: 'werewolf', nb: 1}]
       }
     };
 

@@ -24,7 +24,7 @@ roles.prototype.getAllName = function () {
 
 roles.prototype.contains = function (name) {
   return typeof name === 'string' &&
-  _.contains(this.getAllName, name);
+  _.contains(this.getAllName(), name);
 };
 
 roles.prototype.factory = function (roleName) {

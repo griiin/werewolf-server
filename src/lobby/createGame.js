@@ -26,18 +26,19 @@ function checkRoles (roleList) {
   if (typeof roleList !== 'object') {
     return false;
   }
-  var roleNb = _.reduce(roleList, function(sum, role) {
-    return sum + role.nb;
+  var nbList = _.map(roleList, 'nb');
+  var roleNb = _.reduce(nbList, function(sum, nb) {
+    return sum + nb;
   });
   if (typeof roleNb !== 'number' || roleNb < 6 || roleNb > 20) {
     return false;
   }
-  _.each(roleList, function (role) {
+  return _.every(roleList, function (role) {
     if (!role || !roles.contains(role.roleName)){
       return false;
     }
+    return true;
   });
-  return true;
 }
 
 function verifyData (data) {
