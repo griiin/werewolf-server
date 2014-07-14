@@ -1,87 +1,69 @@
-var Q = require("Q");
-var _ = require("lodash");
-var log = require("../../src/misc/log.js")();
-var client = require("../helper/client.js");
-var lobby = require("../helper/lobby.js");
+var Q = require("Q"),
+_ = require("lodash"),
+log = require("../../src/misc/log.js")(),
+serverHelper = require("../helper/serverHelper.js")(),
+jh = require("../helper/jasmineHelper.js")(),
+client = require("../helper/client.js"),
+lobby = require("../helper/lobby.js");
 
 describe("Server's game creation system", function() {
 
   beforeEach(function() {
-    // init server
-    var server = require('../../src/server.js');
-    this.options = {
-      dbname: 'werewolf-test-0002',
-      dbhost: '127.0.0.1',
-      dbport: 27017,
-      socketport: 4248,
-      displayTime: false,
-      verbose: false,
-      debug: true
-    };
-
-    this.server = new server(this.options);
-    this.server.start();
+    _.extend(this, serverHelper.getConfiguredServer());
   });
 
-  afterEach(function() {
-    var done = false;
-    runs(function() {
-      ////
-      // stop server
-      this.server.stop();
-      // clear db
-      var easyMongo = require('easymongo');
-      this.mongo = new easyMongo({
-        dbname: this.options.dbname,
-        host: this.options.dbhost,
-        port: this.options.dbport
-      });
-      // clear users collection
-      var users = this.mongo.collection('users');
-      users.remove(function(results, err) {
-        done = true;
-      });
-      this.mongo.close();
-      ////
-    });
-    waitsFor(function () {
-      return done;
-    });
-  });
+  afterEach(serverHelper.clearAll);
 
-  it("should call createGame module when a client try to create a game", function() {
-    var done = false;
+  jh.xit("should call createGame module when a client try to create a game", function(callback) {
     var data = {
       port : this.options.socketport,
-      signUpInfo: {
-        username: 'username',
-        password: 'password',
-        email: 'username@email.com',
-        gender: 'male'
-      },
       createGameInfo: {
         password: "xyz",
         language: "FR",
-        roles: []
+        roles: [{roleName: 'citizen', nb: 5},
+        {roleName: 'werewolf', nb: 1}]
       }
     };
     spyOn(require('../../src/lobby/createGame'), 'createGame').andCallThrough();
 
-    runs(function() {
-      client.connectClient(data)
-      .then(client.signUp)
-      .then(lobby.createGame)
-      .then(_.bind(function (data) {
-        expect(require('../../src/lobby/createGame').createGame).toHaveBeenCalled();
-        done = true;
-      }, this))
-      .done();
-    });
-    waitsFor(function () { return done; });
-  });
+    client.connectClient(data)
+    .then(client.signUp)
+    .then(lobby.createGame)
+    .then(_.bind(function (data) {
+      expect(require('../../src/lobby/createGame').createGame).toHaveBeenCalled();
+      callback();
+    }, this))
+    .done();
+  }, this);
 
-  it("should handle game create from a client", function() {
-    var done = false;
+  jh.xit("should handle game create from a client", function(callback) {
+    var data = {
+      port : this.options.socketport,
+      signUpInfo: {
+        username: 'username',
+        password: 'password',
+        email: 'username@email.com',
+        gender: 'male'
+      },
+      createGameInfo: {
+        password: "xyz",
+        language: "FR",
+        roles: [{roleName: 'citizen', nb: 5},
+        {roleName: 'werewolf', nb: 1}]
+      }
+    };
+
+    client.connectClient(data)
+    .then(client.signUp)
+    .then(lobby.createGame)
+    .then(_.bind(function (data) {
+      expect(data.createGameResponseData.result).toBe(true);
+      callback();
+    }, this))
+    .done();
+  }, this);
+
+  jh.it("should refuse game creation if there is less than 6 roles", function(callback) {
     var data = {
       port : this.options.socketport,
       signUpInfo: {
@@ -97,46 +79,13 @@ describe("Server's game creation system", function() {
       }
     };
 
-    runs(function() {
-      client.connectClient(data)
-      .then(client.signUp)
-      .then(lobby.createGame)
-      .then(_.bind(function (data) {
-        expect(data.createGameResponseData.result).toBe(true);
-        done = true;
-      }, this))
-      .done();
-    });
-    waitsFor(function () { return done; });
-  });
-
-  xit("should refuse game creation ", function() {
-    var done = false;
-    var data = {
-      port : this.options.socketport,
-      signUpInfo: {
-        username: 'username',
-        password: 'password',
-        email: 'username@email.com',
-        gender: 'male'
-      },
-      createGameInfo: {
-        password: "xyz",
-        language: "FR",
-        roles: []
-      }
-    };
-
-    runs(function() {
-      client.connectClient(data)
-      .then(client.signUp)
-      .then(lobby.createGame)
-      .then(_.bind(function (data) {
-        expect(data.createGameResponseData.result).toBe(true);
-        done = true;
-      }, this))
-      .done();
-    });
-    waitsFor(function () { return done; });
-  });
+    client.connectClient(data)
+    .then(client.signUp)
+    .then(lobby.createGame)
+    .then(_.bind(function (data) {
+      expect(data.createGameResponseData.result).toBe(false);
+      callback();
+    }, this))
+    .done();
+  }, this);
 });

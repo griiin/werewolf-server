@@ -1,70 +1,30 @@
-var Q = require("Q");
-var _ = require("lodash");
-var log = require("../../src/misc/log.js")();
-var client = require("../helper/client.js");
+var Q = require("Q"),
+_ = require("lodash"),
+log = require("../../src/misc/log.js")(),
+serverHelper = require("../helper/serverHelper.js")(),
+jh = require("../helper/jasmineHelper.js")(),
+client = require("../helper/client.js");
 
 describe("Server's Sign Up system", function() {
 
   beforeEach(function() {
-    // init server
-    var server = require('../../src/server.js');
-    this.options = {
-      dbname: 'werewolf-test-0002',
-      dbhost: '127.0.0.1',
-      dbport: 27017,
-      socketport: 4248,
-      displayTime: false,
-      verbose: false,
-      debug: false
-    };
-
-    this.server = new server(this.options);
-    this.server.start();
+    _.extend(this, serverHelper.getConfiguredServer());
   });
 
-  afterEach(function() {
-    var done = false;
-    runs(function() {
-      ////
-      // stop server
-      this.server.stop();
-      // clear db
-      var easyMongo = require('easymongo');
-      this.mongo = new easyMongo({
-        dbname: this.options.dbname,
-        host: this.options.dbhost,
-        port: this.options.dbport
-      });
-      // clear users collection
-      var users = this.mongo.collection('users');
-      users.remove(function(results, err) {
-        done = true;
-      });
-      this.mongo.close();
-      ////
-    });
-    waitsFor(function () {
-      return done;
-    });
-  });
+  afterEach(serverHelper.clearAll);
 
-  it("should handle client sign up", function() {
-    var done = false;
+  jh.it("should handle client sign up", function(callback) {
     spyOn(require('../../src/connection/signUp'), 'signUp').andCallThrough();
 
-    runs(function() {
-      client.connectAndSignUp(this.options.socketport)
-      .then(_.bind(function (data) {
-        expect(require('../../src/connection/signUp').signUp).toHaveBeenCalled();
-        done = true;
-      }, this))
-      .done();
-    });
-    waitsFor(function () { return done; });
-  });
+    client.connectAndSignUp(this.options.socketport)
+    .then(_.bind(function (data) {
+      expect(require('../../src/connection/signUp').signUp).toHaveBeenCalled();
+      callback();
+    }, this))
+    .done();
+  }, this);
 
-  it("should create an user if informations are correct", function () {
-    var done = false;
+  jh.it("should create an user if informations are correct", function (callback) {
     var signUpInfo = {
       username: 'username',
       password: 'password',
@@ -72,22 +32,18 @@ describe("Server's Sign Up system", function() {
       gender: 'male'
     };
 
-    runs(function() {
-      client.connectAndSignUp(this.options.socketport, signUpInfo)
-      .then(_.bind(function (data) {
-        expect(data.signUpResponseData.result).toBe(true);
-        client.expectOneUserInDB(this.options)
-        .then(function() {
-          done = true;
-        });
-      }, this))
-      .done();
-    });
-    waitsFor(function () { return done; });
-  });
+    client.connectAndSignUp(this.options.socketport, signUpInfo)
+    .then(_.bind(function (data) {
+      expect(data.signUpResponseData.result).toBe(true);
+      client.expectOneUserInDB(this.options)
+      .then(function() {
+        callback();
+      });
+    }, this))
+    .done();
+  }, this);
 
-  it("should handle bad username format", function () {
-    var done = false;
+  jh.it("should handle bad username format", function (callback) {
     var signUpInfo = {
       username: '',
       password: 'password',
@@ -95,19 +51,15 @@ describe("Server's Sign Up system", function() {
       gender: 'male'
     };
 
-    runs(function() {
-      client.connectAndSignUp(this.options.socketport, signUpInfo)
-      .then(_.bind(function (data) {
-        expect(data.signUpResponseData.result).toBe(false);
-        done = true;
-      }, this))
-      .done();
-    });
-    waitsFor(function () { return done; });
-  });
+    client.connectAndSignUp(this.options.socketport, signUpInfo)
+    .then(_.bind(function (data) {
+      expect(data.signUpResponseData.result).toBe(false);
+      callback();
+    }, this))
+    .done();
+  }, this);
 
-  it("should handle bad password format", function () {
-    var done = false;
+  jh.it("should handle bad password format", function (callback) {
     var signUpInfo = {
       username: 'username',
       password: '',
@@ -115,19 +67,15 @@ describe("Server's Sign Up system", function() {
       gender: 'male'
     };
 
-    runs(function() {
-      client.connectAndSignUp(this.options.socketport, signUpInfo)
-      .then(_.bind(function (data) {
-        expect(data.signUpResponseData.result).toBe(false);
-        done = true;
-      }, this))
-      .done();
-    });
-    waitsFor(function () { return done; });
-  });
+    client.connectAndSignUp(this.options.socketport, signUpInfo)
+    .then(_.bind(function (data) {
+      expect(data.signUpResponseData.result).toBe(false);
+      callback();
+    }, this))
+    .done();
+  }, this);
 
-  it("should handle bad email format", function () {
-    var done = false;
+  jh.it("should handle bad email format", function (callback) {
     var signUpInfo = {
       username: 'username',
       password: 'password',
@@ -135,19 +83,15 @@ describe("Server's Sign Up system", function() {
       gender: 'male'
     };
 
-    runs(function() {
-      client.connectAndSignUp(this.options.socketport, signUpInfo)
-      .then(_.bind(function (data) {
-        expect(data.signUpResponseData.result).toBe(false);
-        done = true;
-      }, this))
-      .done();
-    });
-    waitsFor(function () { return done; });
-  });
+    client.connectAndSignUp(this.options.socketport, signUpInfo)
+    .then(_.bind(function (data) {
+      expect(data.signUpResponseData.result).toBe(false);
+      callback();
+    }, this))
+    .done();
+  }, this);
 
-  it("should handle bad gender format", function () {
-    var done = false;
+  jh.it("should handle bad gender format", function (callback) {
     var signUpInfo = {
       username: 'username',
       password: 'password',
@@ -155,19 +99,15 @@ describe("Server's Sign Up system", function() {
       gender: 'martian'
     };
 
-    runs(function() {
-      client.connectAndSignUp(this.options.socketport, signUpInfo)
-      .then(_.bind(function (data) {
-        expect(data.signUpResponseData.result).toBe(false);
-        done = true;
-      }, this))
-      .done();
-    });
-    waitsFor(function () { return done; });
-  });
+    client.connectAndSignUp(this.options.socketport, signUpInfo)
+    .then(_.bind(function (data) {
+      expect(data.signUpResponseData.result).toBe(false);
+      callback();
+    }, this))
+    .done();
+  }, this);
 
-  it("should refuse account with same username", function () {
-    var done = false;
+  jh.it("should refuse account with same username", function (callback) {
     var signUpInfoInnocentUser = {
       username: 'username',
       password: 'password',
@@ -181,21 +121,18 @@ describe("Server's Sign Up system", function() {
       gender: 'female'
     };
 
-    runs(function() {
-      var data = {port : this.options.socketport, signUpInfo: signUpInfoInnocentUser};
-      client.connectClient(data)
-      .then(client.signUp)
+    var data = {port : this.options.socketport, signUpInfo: signUpInfoInnocentUser};
+    client.connectClient(data)
+    .then(client.signUp)
+    .then(function (data) {
+      data.signUpInfo = signUpInfoEvilUser;
+      client.signUp(data)
       .then(function (data) {
-        data.signUpInfo = signUpInfoEvilUser;
-        client.signUp(data)
-        .then(function (data) {
-          expect(data.signUpResponseData.result).toBe(false);
-          done = true;
-        })
-        .done();
+        expect(data.signUpResponseData.result).toBe(false);
+        callback();
       })
       .done();
-    });
-    waitsFor(function () { return done; });
-  });
+    })
+    .done();
+  }, this);
 });

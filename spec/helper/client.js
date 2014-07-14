@@ -20,9 +20,12 @@ client.prototype.connectClient = function (data) {
   return deferred.promise;
 };
 
-client.prototype.signUp = function (data) {
+client.prototype.signUp = _.bind(function (data) {
   var deferred = Q.defer();
 
+  if (!data.signUpInfo) {
+    data.signUpInfo = this.getBasicSignUpInfo();
+  }
   data.client.on('sign_up_response', function (signUpResponseData) {
     data.signUpResponseData = signUpResponseData;
     deferred.resolve(data);
@@ -30,11 +33,14 @@ client.prototype.signUp = function (data) {
   data.client.emit('sign_up', data.signUpInfo);
 
   return deferred.promise;
-};
+}, client.prototype);
 
-client.prototype.signIn = function (data) {
+client.prototype.signIn = _.bind(function (data) {
   var deferred = Q.defer();
 
+  if (!data.signInInfo) {
+    data.signInInfo = this.getBasicSignInInfo();
+  }
   data.client.on('sign_in_response', function (signInResponseData) {
     data.signInResponseData = signInResponseData;
     deferred.resolve(data);
@@ -42,7 +48,7 @@ client.prototype.signIn = function (data) {
   data.client.emit('sign_in', data.signInInfo);
 
   return deferred.promise;
-};
+}, client.prototype);
 
 client.prototype.close = function(data) {
   data.client.close();
@@ -83,6 +89,22 @@ client.prototype.expectOneUserInDB = function(options) {
   db.close();
 
   return deferred.promise;
+};
+
+client.prototype.getBasicSignUpInfo = function () {
+  return {
+    username: 'username',
+    password: 'password',
+    email: 'username@email.com',
+    gender: 'male'
+  };
+};
+
+client.prototype.getBasicSignInInfo = function () {
+  return {
+    username: 'username',
+    password: 'password'
+  };
 };
 
 module.exports = new client();

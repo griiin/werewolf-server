@@ -1,9 +1,10 @@
 var _ = require('lodash'),
 Q = require("Q"),
-log = require('../misc/log.js')();
+log = require('../misc/log.js')(),
+roles = require('../roles/roles');
 
 exports.createGame = function (data, user, mongo, games) {
-  if (!VerifyData(data)) {
+  if (!verifyData(data)) {
     user.socket.emit("create_game_response", { result: false });
     return;
   }
@@ -21,7 +22,26 @@ function checkLanguage (str) {
   return _(acceptedLanguage).contains(str);
 }
 
-function VerifyData (data) {
+function checkRoles (roleList) {
+  if (typeof roleList !== 'object') {
+    return false;
+  }
+  var roleNb = _.reduce(roleList, function(sum, role) {
+    return sum + role.nb;
+  });
+  if (typeof roleNb !== 'number' || roleNb < 6 || roleNb > 20) {
+    return false;
+  }
+  _.each(roleList, function (role) {
+    if (!role || !roles.contains(role.roleName)){
+      return false;
+    }
+  });
+  return true;
+}
+
+function verifyData (data) {
   return !!data &&
+  checkRoles(data.roles) &&
   checkLanguage(data.language);
 }

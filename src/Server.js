@@ -2,7 +2,7 @@ var _ = require('lodash'),
 Q = require("Q"),
 log;
 
-var server = function(options) {
+var Server = function(options) {
   var defaults = {
     verbose: false,
     debug: false,
@@ -19,7 +19,7 @@ var server = function(options) {
   });
 };
 
-server.prototype.displayTitle = function () {
+Server.prototype.displayTitle = function () {
   log.base(" _     _  _______  ______    _______  _     _  _______  ___      _______ ");
   log.base("| | _ | ||       ||    _ |  |       || | _ | ||       ||   |    |       |");
   log.base("| || || ||    ___||   | ||  |    ___|| || || ||   _   ||   |    |    ___|");
@@ -37,7 +37,7 @@ server.prototype.displayTitle = function () {
   log.base("");
 };
 
-server.prototype.start = function () {
+Server.prototype.start = function () {
   this.displayTitle();
   log.info("welcome");
   log.info("[svr] starting");
@@ -45,7 +45,7 @@ server.prototype.start = function () {
   this.startSocketServer();
 };
 
-server.prototype.stop = function () {
+Server.prototype.stop = function () {
   log.info("[svr] stopping");
   _(this.clients).forEach(function(client) {
     client.disconnect();
@@ -56,7 +56,7 @@ server.prototype.stop = function () {
   log.info("byebye");
 };
 
-server.prototype.initializeDb = function () {
+Server.prototype.initializeDb = function () {
   log.info("[mdb] initilizing");
   var easyMongo = require('easymongo');
   this.mongo = new easyMongo({
@@ -66,7 +66,7 @@ server.prototype.initializeDb = function () {
   });
 };
 
-server.prototype.startSocketServer = function () {
+Server.prototype.startSocketServer = function () {
   log.info("[sio] starting");
   this.app = require('express')();
   this.http = require('http').Server(this.app);
@@ -82,7 +82,7 @@ server.prototype.startSocketServer = function () {
   this.games = [];
 };
 
-server.prototype.getClientInfo = function (socket) {
+Server.prototype.getClientInfo = function (socket) {
   var addr = socket.handshake.address;
   if (addr) {
     return addr.address + ":" + addr.port;
@@ -91,7 +91,7 @@ server.prototype.getClientInfo = function (socket) {
   }
 };
 
-server.prototype.onConnection = function (socket) {
+Server.prototype.onConnection = function (socket) {
   log.info("[usr] '" + this.getClientInfo(socket) + "' trying to connect");
   if (!_(this.clients).contains(socket)) {
     log.info("[usr] '" + this.getClientInfo(socket) + "' connected");
@@ -103,7 +103,7 @@ server.prototype.onConnection = function (socket) {
   }
 };
 
-server.prototype.onLobby = function(user) {
+Server.prototype.onLobby = function(user) {
   if (!this.users[user.data.username]) {
     log.info("[usr] '" + user.data.username + "' (" + this.getClientInfo(user.socket) + ") entering the lobby");
     user.rolesLoaded = false;
@@ -119,11 +119,11 @@ server.prototype.onLobby = function(user) {
   }
 };
 
-server.prototype.onGame = function(user, game) {
+Server.prototype.onGame = function(user, game) {
   log.error("user connected Oo");
 };
 
-server.prototype.on = function (client, actionName, func, additionalData) {
+Server.prototype.on = function (client, actionName, func, additionalData) {
   // client can be the identified user, or (if not identified yet) the socket
   var socket = client.socket ? client.socket : client;
 
@@ -133,4 +133,4 @@ server.prototype.on = function (client, actionName, func, additionalData) {
   }, this));
 };
 
-module.exports = server;
+module.exports = Server;
