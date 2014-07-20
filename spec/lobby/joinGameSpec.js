@@ -9,7 +9,7 @@ lobby = require("../helper/lobby.js");
 describe("Server's joining game system", function() {
 
   beforeEach(function() {
-    _.extend(this, serverHelper.getConfiguredServer({debug: true}));
+    _.extend(this, serverHelper.getConfiguredServer({debug: false, verbose: false}));
   });
 
   afterEach(serverHelper.clearAll);
@@ -54,6 +54,30 @@ describe("Server's joining game system", function() {
     .then(lobby.joinGame)
     .then(_.bind(function (data) {
       expect(data.joinGameResponseData.result).toBe(true);
+      callback();
+    }, this))
+    .done();
+  }, this);
+
+  jh.it("should refuse user joining a game who doesn't exist", function(callback) {
+    var data = {
+      port : this.options.socketport,
+      createGameInfo: {
+        password: "xyz",
+        language: "FR",
+        roles: [{roleName: 'citizen', nb: 5},
+        {roleName: 'werewolf', nb: 1}]
+      }
+    };
+
+    client.connectNewClient(data)
+    .then(client.signUp)
+    .then(lobby.createGame)
+    .then(client.connectNewClient)
+    .then(client.signUp2)
+    .then(lobby.joinBadGame)
+    .then(_.bind(function (data) {
+      expect(data.joinGameResponseData.result).toBe(false);
       callback();
     }, this))
     .done();

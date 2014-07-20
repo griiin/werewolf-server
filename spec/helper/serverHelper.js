@@ -29,7 +29,7 @@ serverHelper.prototype.getConfiguredServer = _.bind(function (settings) {
   this.server = new Server(this.options);
   this.server.start();
 
-  this.cleanDB();
+  // this.cleanDB();
 
   return { server: this.server, options: this.options };
 }, serverHelper.prototype);

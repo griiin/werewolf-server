@@ -42,4 +42,16 @@ lobby.prototype.joinGame = function (data) {
   return deferred.promise;
 };
 
+lobby.prototype.joinBadGame = function (data) {
+  var deferred = Q.defer();
+
+  data.client.on("join_game_response", function (responseData) {
+    data.joinGameResponseData = responseData;
+    deferred.resolve(data);
+  });
+  data.client.emit("join_game", {id: 'á'});
+
+  return deferred.promise;
+};
+
 module.exports = new lobby();
