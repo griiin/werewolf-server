@@ -16,13 +16,7 @@ describe("Server's game creation system", function() {
 
   jh.it("should call createGame module when a client try to create a game", function(callback) {
     var data = {
-      port : this.options.socketport,
-      createGameInfo: {
-        password: "xyz",
-        language: "FR",
-        roles: [{roleName: 'citizen', nb: 5},
-        {roleName: 'werewolf', nb: 1}]
-      }
+      port : this.options.socketport
     };
     spyOn(require('../../src/lobby/createGame'), 'createGame').andCallThrough();
 
@@ -38,13 +32,7 @@ describe("Server's game creation system", function() {
 
   jh.it("should handle game create from a client", function(callback) {
     var data = {
-      port : this.options.socketport,
-      createGameInfo: {
-        password: "xyz",
-        language: "FR",
-        roles: [{roleName: 'citizen', nb: 5},
-        {roleName: 'werewolf', nb: 1}]
-      }
+      port : this.options.socketport
     };
 
     client.connectNewClient(data)

@@ -16,13 +16,7 @@ describe("Server's joining game system", function() {
 
   jh.it("should make an user join the game he just created", function(callback) {
     var data = {
-      port : this.options.socketport,
-      createGameInfo: {
-        password: "xyz",
-        language: "FR",
-        roles: [{roleName: 'citizen', nb: 5},
-        {roleName: 'werewolf', nb: 1}]
-      }
+      port : this.options.socketport
     };
 
     client.connectNewClient(data)
@@ -37,13 +31,7 @@ describe("Server's joining game system", function() {
 
   jh.it("should accept user joining a game", function(callback) {
     var data = {
-      port : this.options.socketport,
-      createGameInfo: {
-        password: "xyz",
-        language: "FR",
-        roles: [{roleName: 'citizen', nb: 5},
-        {roleName: 'werewolf', nb: 1}]
-      }
+      port : this.options.socketport
     };
 
     client.connectNewClient(data)
@@ -61,13 +49,7 @@ describe("Server's joining game system", function() {
 
   jh.it("should refuse user joining a game who doesn't exist", function(callback) {
     var data = {
-      port : this.options.socketport,
-      createGameInfo: {
-        password: "xyz",
-        language: "FR",
-        roles: [{roleName: 'citizen', nb: 5},
-        {roleName: 'werewolf', nb: 1}]
-      }
+      port : this.options.socketport
     };
 
     client.connectNewClient(data)

@@ -11,9 +11,13 @@ exports.joinGame = function (data, user, mongo, additionalData) {
   var search = _.first(additionalData.games, {id: data.id});
   if (search.length === 1) {
     log.info("[jng] user " + user.username + " joined game nb" + data.id);
-    user.socket.emit("join_game_response", { result: true });
     var game = search[0];
-    additionalData.callback(user, game);
+    if (game.tryAddUser(user)) {
+      user.socket.emit("join_game_response", { result: true });
+      additionalData.callback(user, game);
+    } else {
+      user.socket.emit("join_game_response", { result: false });
+    }
   } else {
     log.info("[jng] user " + user.username + " failed joining");
     user.socket.emit("join_game_response", { result: false });

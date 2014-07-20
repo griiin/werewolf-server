@@ -21,6 +21,9 @@ lobby.prototype.listRoles = function (data) {
 lobby.prototype.createGame = function (data) {
   var deferred = Q.defer();
 
+  if (!data.createGameInfo) {
+    data.createGameInfo = getBasicGameCreationInfo();
+  }
   data.client.on("create_game_response", function (responseData) {
     data.createGameResponseData = responseData;
     deferred.resolve(data);
@@ -65,5 +68,27 @@ lobby.prototype.listGames = function (data) {
 
   return deferred.promise;
 };
+
+lobby.prototype.leaveGame = function (data) {
+  var deferred = Q.defer();
+
+  data.client.on("leave_game_response", function (responseData) {
+    data.leaveGameResponseData = responseData;
+    deferred.resolve(data);
+  });
+  data.client.emit("leave_game");
+
+  return deferred.promise;
+};
+
+function getBasicGameCreationInfo () {
+  return {
+    password: "xyz",
+    language: "FR",
+    roles: [{roleName: 'citizen', nb: 5},
+    {roleName: 'werewolf', nb: 1}]
+  };
+}
+
 
 module.exports = new lobby();
