@@ -38,7 +38,7 @@ describe("Server's joining game system", function() {
     .then(client.signUp)
     .then(lobby.createGame)
     .then(client.connectNewClient)
-    .then(client.signUp2)
+    .then(client.signUpNew)
     .then(lobby.joinGame)
     .then(_.bind(function (data) {
       expect(data.joinGameResponseData.result).toBe(true);
@@ -56,7 +56,7 @@ describe("Server's joining game system", function() {
     .then(client.signUp)
     .then(lobby.createGame)
     .then(client.connectNewClient)
-    .then(client.signUp2)
+    .then(client.signUpNew)
     .then(lobby.joinBadGame)
     .then(_.bind(function (data) {
       expect(data.joinGameResponseData.result).toBe(false);

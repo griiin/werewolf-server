@@ -40,8 +40,17 @@ client.prototype.signUp = _.bind(function (data) {
   return deferred.promise;
 }, client.prototype);
 
-client.prototype.signUp2 = _.bind(function (data) {
-  data.signUpInfo.username = 'username2';
+client.prototype.signUpNew = _.bind(function (data) {
+  var pattern = /(.*)([0-9]+)/;
+  if (pattern.test(data.signUpInfo.username))  {
+    var tab = pattern.exec(data.signUpInfo.username);
+    var username = tab[1];
+    var nb = parseInt(tab[2]);
+    nb++;
+    data.signUpInfo.username = username + nb;
+  } else {
+    data.signUpInfo.username += '0';
+  }
   return this.signUp(data);
 }, client.prototype);
 

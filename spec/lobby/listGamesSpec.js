@@ -40,7 +40,7 @@ describe("Server's list game system", function() {
     .then(client.signUp)
     .then(lobby.createGame)
     .then(client.connectNewClient)
-    .then(client.signUp2)
+    .then(client.signUpNew)
     .then(lobby.joinGame)
     .then(lobby.listGames)
     .then(_.bind(function (data) {

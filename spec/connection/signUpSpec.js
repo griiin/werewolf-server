@@ -121,7 +121,7 @@ describe("Server's Sign Up system", function() {
       gender: 'female'
     };
 
-    var data = {port : this.options.socketport, signUpInfo: signUpInfoInnocentUser};
+    var data = { port : this.options.socketport, signUpInfo: signUpInfoInnocentUser };
     client.connectNewClient(data)
     .then(client.signUp)
     .then(client.disconnect)
