@@ -22,12 +22,14 @@ serverHelper.prototype.getConfiguredServer = _.bind(function (settings) {
     dbport: 27017,
     socketport: 4253,
     displayTime: false,
-    verbose: false,
+    verbose: settings ? !!settings.verbose : false,
     debug: settings ? !!settings.debug : false
   };
 
   this.server = new Server(this.options);
   this.server.start();
+
+  this.cleanDB();
 
   return { server: this.server, options: this.options };
 }, serverHelper.prototype);

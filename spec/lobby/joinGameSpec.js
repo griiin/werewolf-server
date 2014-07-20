@@ -35,7 +35,7 @@ describe("Server's joining game system", function() {
     .done();
   }, this);
 
-  jh.xit("should accept user joining a game", function(callback) {
+  jh.it("should accept user joining a game", function(callback) {
     var data = {
       port : this.options.socketport,
       createGameInfo: {
@@ -50,7 +50,7 @@ describe("Server's joining game system", function() {
     .then(client.signUp)
     .then(lobby.createGame)
     .then(client.connectNewClient)
-    .then(client.signIn)
+    .then(client.signUp2)
     .then(lobby.joinGame)
     .then(_.bind(function (data) {
       expect(data.joinGameResponseData.result).toBe(true);

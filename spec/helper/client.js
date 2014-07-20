@@ -40,6 +40,11 @@ client.prototype.signUp = _.bind(function (data) {
   return deferred.promise;
 }, client.prototype);
 
+client.prototype.signUp2 = _.bind(function (data) {
+  data.signUpInfo.username = 'username2';
+  return this.signUp(data);
+}, client.prototype);
+
 client.prototype.signIn = _.bind(function (data) {
   var deferred = Q.defer();
 
