@@ -19,7 +19,7 @@ module.exports = function(grunt) {
         match: '.',
         matchall: false,
         extensions: 'js',
-        specNameMatcher: 'nGameSpec',
+        specNameMatcher: 'Spec',
         jUnit: {
           report: true,
           savePath : "./build/reports/jasmine/",
