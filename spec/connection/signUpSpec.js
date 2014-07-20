@@ -122,8 +122,10 @@ describe("Server's Sign Up system", function() {
     };
 
     var data = {port : this.options.socketport, signUpInfo: signUpInfoInnocentUser};
-    client.connectClient(data)
+    client.connectNewClient(data)
     .then(client.signUp)
+    .then(client.disconnect)
+    .then(client.connectNewClient)
     .then(function (data) {
       data.signUpInfo = signUpInfoEvilUser;
       client.signUp(data)

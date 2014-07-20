@@ -21,7 +21,7 @@ describe("Server's list roles system", function() {
     };
     spyOn(require('../../src/lobby/listRoles'), 'listRoles').andCallThrough();
 
-    client.connectClient(data)
+    client.connectNewClient(data)
     .then(client.signUp)
     .then(lobby.listRoles)
     .then(_.bind(function (data) {
@@ -36,7 +36,7 @@ describe("Server's list roles system", function() {
       port : this.options.socketport,
       signUpInfo: client.getBasicSignUpInfo()
     };
-    client.connectClient(data)
+    client.connectNewClient(data)
     .then(client.signUp)
     .then(lobby.listRoles)
     .then(_.bind(function (data) {
@@ -51,7 +51,7 @@ describe("Server's list roles system", function() {
       port : this.options.socketport,
       signUpInfo: client.getBasicSignUpInfo()
     };
-    client.connectClient(data)
+    client.connectNewClient(data)
     .then(client.signUp)
     .then(lobby.listRoles)
     .then(lobby.listRoles)

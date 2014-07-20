@@ -5,18 +5,18 @@ serverHelper = require("../helper/serverHelper.js")(),
 jh = require("../helper/jasmineHelper.js")(),
 client = require("../helper/client.js");
 
-xdescribe("Server's lobby system", function() {
+describe("Server's lobby system", function() {
   beforeEach(function() {
-    _.extend(this, serverHelper.getConfiguredServer({spyOn: 'onLobby'}));
+    _.extend(this, serverHelper.getConfiguredServer({spyOn: 'onUserIdentification'}));
   });
 
   afterEach(serverHelper.clearAll);
 
   jh.it("should handle client joining the lobby", function (callback) {
-    client.connectClient({port: this.options.socketport})
+    client.connectNewClient({port: this.options.socketport})
     .then(client.signUp)
     .then(_.bind(function (data) {
-      expect(this.server.onLobby).toHaveBeenCalled();
+      expect(this.server.onUserIdentification).toHaveBeenCalled();
       callback();
     }, this))
     .done();

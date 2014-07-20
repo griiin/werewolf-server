@@ -26,7 +26,7 @@ describe("Server's game creation system", function() {
     };
     spyOn(require('../../src/lobby/createGame'), 'createGame').andCallThrough();
 
-    client.connectClient(data)
+    client.connectNewClient(data)
     .then(client.signUp)
     .then(lobby.createGame)
     .then(_.bind(function (data) {
@@ -47,7 +47,7 @@ describe("Server's game creation system", function() {
       }
     };
 
-    client.connectClient(data)
+    client.connectNewClient(data)
     .then(client.signUp)
     .then(lobby.createGame)
     .then(_.bind(function (data) {
@@ -67,7 +67,7 @@ describe("Server's game creation system", function() {
       }
     };
 
-    client.connectClient(data)
+    client.connectNewClient(data)
     .then(client.signUp)
     .then(lobby.createGame)
     .then(_.bind(function (data) {
@@ -88,7 +88,7 @@ describe("Server's game creation system", function() {
       }
     };
 
-    client.connectClient(data)
+    client.connectNewClient(data)
     .then(client.signUp)
     .then(lobby.createGame)
     .then(_.bind(function (data) {

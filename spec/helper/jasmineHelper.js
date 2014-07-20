@@ -23,6 +23,9 @@ jasmineHelper.prototype.wrapper = function(testCallback, that) {
 };
 
 jasmineHelper.prototype.it = function (testName, testCallback, that) {
+  if (!that) {
+    log.error("thisArg must be defined");
+  }
   it(testName, this.wrapper(testCallback, that));
 };
 

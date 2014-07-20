@@ -8,7 +8,7 @@ client = require("../helper/client.js");
 describe("Server's connection system", function() {
 
   beforeEach(function() {
-    _.extend(this, serverHelper.getConfiguredServer({spyOn: 'onConnection'}));
+    _.extend(this, serverHelper.getConfiguredServer({spyOn: 'onClientConnection'}));
   });
 
   afterEach(function () {
@@ -18,7 +18,7 @@ describe("Server's connection system", function() {
   jh.it("should handle client Connection", function(callback) {
     client.connectAndSignUp(this.options.socketport)
     .then(_.bind(function (data) {
-      expect(this.server.onConnection).toHaveBeenCalled();
+      expect(this.server.onClientConnection).toHaveBeenCalled();
       callback();
     }, this))
     .done();

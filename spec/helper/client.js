@@ -6,7 +6,7 @@ var client = function () {
 
 };
 
-client.prototype.connectClient = function (data) {
+client.prototype.connectNewClient = function (data) {
   var deferred = Q.defer();
   data.client = require('socket.io-client').connect('http://localhost:' + data.port, {
     'reconnection delay' : 0,
@@ -18,6 +18,11 @@ client.prototype.connectClient = function (data) {
     deferred.resolve(data);
   });
   return deferred.promise;
+};
+
+client.prototype.disconnect = function (data) {
+  data.client.disconnect();
+  return data;
 };
 
 client.prototype.signUp = _.bind(function (data) {
@@ -59,7 +64,7 @@ client.prototype.connectAndSignUp = function(port, signUpInfo) {
   var deferred = Q.defer();
 
   var data = {port : port, signUpInfo: signUpInfo, deferred: deferred};
-  this.connectClient(data)
+  this.connectNewClient(data)
   .then(this.signUp)
   .then(this.close)
   .done();

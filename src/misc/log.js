@@ -28,7 +28,7 @@ log.prototype.setOptions = function (options) {
 };
 
 log.prototype.base = function (str) {
-  if (this.settings.verbose && !this.settings.debug) {
+  if (this.settings.verbose) {
     console.log(str.grey);
   }
 
@@ -73,7 +73,7 @@ log.prototype.debug = function () {
 };
 
 log.prototype.input = function () {
-  if (this.settings.verbose || this.settings.debug) {
+  if (this.settings.verbose) {
     var args = Array.prototype.slice.call(arguments, 0);
     var suffix = generateSuffix("input", args, this.settings);
     this.logIt(args);

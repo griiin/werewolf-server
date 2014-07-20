@@ -47,7 +47,9 @@ Server.prototype.start = function () {
 
 Server.prototype.stop = function () {
   log.info("[svr] stopping");
-  _(this.clients).forEach(function(client) {
+  // Macking copy due to cleanClient which will delete clients from the array
+  var clients = this.clients.slice(0);
+  _.forEach(clients, function(client) {
     client.disconnect();
   });
   this.http.close();
@@ -72,7 +74,7 @@ Server.prototype.startSocketServer = function () {
   this.http = require('http').Server(this.app);
   this.io = require('socket.io')(this.http);
 
-  this.io.on('connection', _.bind(this.onConnection, this));
+  this.io.on('connection', _.bind(this.onClientConnection, this));
 
   this.http.listen(this.settings.socketport, _.bind(function(){
     log.info('[sio] listening on port ' + this.settings.socketport);
@@ -91,40 +93,77 @@ Server.prototype.getClientInfo = function (socket) {
   }
 };
 
-Server.prototype.onConnection = function (socket) {
+Server.prototype.onClientConnection = function (socket) {
   log.info("[usr] '" + this.getClientInfo(socket) + "' trying to connect");
   if (!_(this.clients).contains(socket)) {
     log.info("[usr] '" + this.getClientInfo(socket) + "' connected");
     this.clients.push(socket);
-    this.on(socket, 'sign_up', require('./connection/signUp').signUp, _.bind(this.onLobby, this));
-    this.on(socket, 'sign_in', require('./connection/signIn').signIn, _.bind(this.onLobby, this));
+    this.onClientDisconnection(socket);
+    this.on(socket, 'sign_up', require('./connection/signUp').signUp, _.bind(this.onUserIdentification, this));
+    this.on(socket, 'sign_in', require('./connection/signIn').signIn, _.bind(this.onUserIdentification, this));
   } else {
     log.info("[usr] '" + this.getClientInfo(socket) + "' already connected");
   }
 };
 
-Server.prototype.onLobby = function(user) {
-  if (!this.users[user.data.username]) {
-    log.info("[usr] '" + user.data.username + "' (" + this.getClientInfo(user.socket) + ") entering the lobby");
-    user.rolesLoaded = false;
-    this.users[user.data.username] = user;
-    this.on(user, 'list_roles', require('./lobby/listRoles').listRoles);
-    this.on(user, 'create_game', require('./lobby/createGame').createGame, this.games);
-    // this.on(user.socket, 'list_games', require('./lobby/listGames').listGames, this.games);
-    // this.on(user.socket, 'join_game', require('./lobby/joinGame').joinGame, {games: this.games, callback: _.bind(this.onGame, this)});
-    // this.on(user.socket, 'leave_game', require('./lobby/leaveGame').leaveGame, this.games);
-  } else {
-    // log.info("[usr] '" + user.data.username + "' (" + this.getClientInfo(user.socket) + ") already in lobby");
-    // user.socket.disconnect();
+Server.prototype.onClientDisconnection = function (socket) {
+  socket.on('disconnect', _.bind(function () {
+    _.forEach(this.games, function (game) {
+      _.remove(game.users, {socket: socket});
+    });
+    _.remove(this.games, function (game) {
+      return game.users.length === 0;
+    });
+    _.remove(this.clients, socket);
+    _.remove(this.users, {socket: socket});
+  }, this));
+};
+
+Server.prototype.onUserIdentification = function(user, respond) {
+  this.cleanConnectionListeners(user.socket);
+  var message = this.checkIdentifiedUsers(user.username);
+  respond(user.socket, message);
+  if (!message) {
+    log.info("[usr] '" + user.username + "' (" + this.getClientInfo(user.socket) + ") entering lobby");
+    this.initLobby(user);
+    this.initLobbyListeners(user);
   }
 };
 
+Server.prototype.initLobbyListeners = function (user) {
+  this.on(user, 'list_roles', require('./lobby/listRoles').listRoles);
+  this.on(user, 'create_game', require('./lobby/createGame').createGame, {games: this.games, callback: _.bind(this.onGame, this)});
+  // this.on(user.socket, 'list_games', require('./lobby/listGames').listGames, this.games);
+  //this.on(user.socket, 'join_game', require('./lobby/joinGame').joinGame, {games: this.games, callback: _.bind(this.onGame, this)});
+  // this.on(user.socket, 'leave_game', require('./lobby/leaveGame').leaveGame, this.games);
+};
+
+Server.prototype.initLobby = function (user) {
+  user.rolesLoaded = false;
+  this.users.push(user);
+};
+
+Server.prototype.cleanConnectionListeners = function (socket) {
+  socket.removeAllListeners('sign_up');
+  socket.removeAllListeners('sign_in');
+};
+
+Server.prototype.checkIdentifiedUsers = function (username) {
+  if (_.contains(this.getUsernameList(), username)) {
+    return "ALREADY_CONNECTED";
+  }
+};
+
+Server.prototype.getUsernameList = function () {
+  return _.map(this.users, "username");
+};
+
 Server.prototype.onGame = function(user, game) {
-  log.error("user connected Oo");
+  log.debug("user connected Oo");
 };
 
 Server.prototype.on = function (client, actionName, func, additionalData) {
-  // client can be the identified user, or (if not identified yet) the socket
+  // if the client isn't identify yet, client == client's socket
   var socket = client.socket ? client.socket : client;
 
   socket.on(actionName, _.bind(function(data) {

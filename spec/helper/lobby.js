@@ -6,11 +6,23 @@ var lobby = function () {
 
 };
 
+lobby.prototype.listRoles = function (data) {
+  var deferred = Q.defer();
+
+  data.client.on("list_roles_response", function (responseData) {
+    data.listRolesResponseData = responseData;
+    deferred.resolve(data);
+  });
+  data.client.emit("list_roles");
+
+  return deferred.promise;
+};
+
 lobby.prototype.createGame = function (data) {
   var deferred = Q.defer();
 
-  data.client.on("create_game_response", function (createGameResponseData) {
-    data.createGameResponseData = createGameResponseData;
+  data.client.on("create_game_response", function (responseData) {
+    data.createGameResponseData = responseData;
     deferred.resolve(data);
   });
   data.client.emit("create_game", data.createGameInfo);
@@ -18,14 +30,14 @@ lobby.prototype.createGame = function (data) {
   return deferred.promise;
 };
 
-lobby.prototype.listRoles = function (data) {
+lobby.prototype.joinGame = function (data) {
   var deferred = Q.defer();
 
-  data.client.on("list_roles_response", function (listRolesResponseData) {
-    data.listRolesResponseData = listRolesResponseData;
+  data.client.on("join_game_response", function (responseData) {
+    data.joinGameResponseData = responseData;
     deferred.resolve(data);
   });
-  data.client.emit("list_roles");
+  data.client.emit("join_game", {id: data.createGameResponseData.id});
 
   return deferred.promise;
 };

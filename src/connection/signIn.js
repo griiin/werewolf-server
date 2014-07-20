@@ -2,49 +2,43 @@ var Q = require("Q");
 var log = require('../misc/log.js')();
 
 exports.signIn = function (data, socket, mongo, callback) {
-  if (!VerifyData(data)) {
+  if (!verifyData(data)) {
     log.info('[usr] sign_in failed');
-    socket.emit("sign_in_response", {result: false, message: "INCORRECT_DATA"});
+    respond(socket, "INCORRECT_DATA");
     return;
   }
-  tryToFindUser(data, socket, mongo, callback)
-  .then(function (result) {
-    log.info('[usr] sign_in => ', result);
-    socket.emit("sign_in_response", result);
-  })
-  .done();
+  tryToFindUser(data, socket, mongo, callback);
 };
 
 function tryToFindUser(data, socket, mongo, callback) {
-  var deferred = Q.defer();
-
   var users = mongo.collection('users');
   users.find({username: data.username}, {limit: 1}, function (error, results) {
-    var message = "UNKNOWN_USER";
-    var result = false;
-    if (results.length == 1) {
+    message = "UNKNOWN_USER";
+    if (results.length === 1) {
       message = "WRONG_PASSWORD";
       var user = results[0];
-      if (user.password == data.password) {
-        message = "";
-        result = true;
-        callback({data: user, socket: socket});
+      if (user.password === data.password) {
+        user.socket = socket;
+        callback(user, respond);
+        return;
       }
     }
-    deferred.resolve({result: result, message: message});
+    respond(socket, message);
   });
-
-  return deferred.promise;
 }
 
-function CheckField(field, max) {
+function respond(socket, error) {
+  socket.emit("sign_in_response", {result: !error, message: error});
+}
+
+function checkField(field, max) {
   return typeof field == "string" &&
   field.length >= 6 &&
   field.length <= max;
 }
 
-function VerifyData(data) {
+function verifyData(data) {
   return !!data &&
-  CheckField(data.username, 42) &&
-  CheckField(data.password, 512);
+  checkField(data.username, 42) &&
+  checkField(data.password, 512);
 }

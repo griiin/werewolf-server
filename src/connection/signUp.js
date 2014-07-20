@@ -1,16 +1,16 @@
 var log = require('../misc/log.js')();
 
 exports.signUp = function (data, socket, mongo, callback) {
-  if (!VerifyData(data)) {
+  if (!verifyData(data)) {
     log.info('[usr] sign_up failed');
-    socket.emit("sign_up_response", { result: false, message: "INCORRECT_DATA" });
+    respond(socket, "INCORRECT_DATA");
     return;
   }
   var users = mongo.collection('users');
   users.find({username: data.username}, function (error, results) {
     if (results.length > 0) {
       log.info('[usr] sign_up failed');
-      socket.emit("sign_up_response", {result: false, message: "ERROR_DATABASE"});
+      respond(socket, "ERROR_DATABASE");
       return;
     }
     users.save({
@@ -21,25 +21,31 @@ exports.signUp = function (data, socket, mongo, callback) {
     }, function (error) {
       if (!error) {
         log.info("[mdb] user saved");
-        socket.emit("sign_up_response", { result: true });
-        callback({data: data, socket: socket});
+        data.socket = socket;
+        callback(data, respond);
+        return;
       } else {
         log.info("[mdb] user save failed");
+        respond(socket, "ERROR_DATABASE");
       }
     });
   });
 };
 
-function CheckField(field, max) {
+function respond(socket, message) {
+  socket.emit("sign_up_response", {result: !message, message: message});
+}
+
+function checkField(field, max) {
   return typeof field == "string" &&
   field.length >= 6 &&
   field.length <= max;
 }
 
-function VerifyData(data) {
+function verifyData(data) {
   return !!data &&
-  CheckField(data.username, 42) &&
-  CheckField(data.password, 512) &&
-  CheckField(data.email, 42) &&
+  checkField(data.username, 42) &&
+  checkField(data.password, 512) &&
+  checkField(data.email, 42) &&
   (data.gender === "male" || data.gender === "female");
 }

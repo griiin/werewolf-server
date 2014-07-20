@@ -8,7 +8,7 @@ client = require("../helper/client.js");
 describe("Server's Sign in system", function() {
 
   beforeEach(function() {
-    _.extend(this, serverHelper.getConfiguredServer());
+    _.extend(this, serverHelper.getConfiguredServer({debug: true}));
   });
 
   afterEach(serverHelper.clearAll);
@@ -16,8 +16,7 @@ describe("Server's Sign in system", function() {
   jh.it("should handle client sign in", function(callback) {
     spyOn(require('../../src/connection/signIn'), 'signIn').andCallThrough();
 
-    log.debug(client.connectClient);
-    client.connectClient({port : this.options.socketport})
+    client.connectNewClient({port : this.options.socketport})
     .then(client.signIn)
     .then(_.bind(function (data) {
       expect(require('../../src/connection/signIn').signIn).toHaveBeenCalled();
@@ -29,11 +28,27 @@ describe("Server's Sign in system", function() {
   jh.it("should accept user login if there is a corresponding account", function(callback) {
     var done = false;
 
-    client.connectClient({port: this.options.socketport})
+    client.connectNewClient({port: this.options.socketport})
     .then(client.signUp)
+    .then(client.disconnect)
+    .then(client.connectNewClient)
     .then(client.signIn)
     .then(_.bind(function (data) {
       expect(data.signInResponseData.result).toBe(true);
+      callback();
+    }, this))
+    .done();
+  }, this);
+
+  jh.it("should refuse user login if he's already logged in", function(callback) {
+    var done = false;
+
+    client.connectNewClient({port: this.options.socketport})
+    .then(client.signUp)
+    .then(client.connectNewClient)
+    .then(client.signIn)
+    .then(_.bind(function (data) {
+      expect(data.signInResponseData.result).toBe(false);
       callback();
     }, this))
     .done();
@@ -48,8 +63,10 @@ describe("Server's Sign in system", function() {
       }
     };
 
-    client.connectClient(data)
+    client.connectNewClient(data)
     .then(client.signUp)
+    .then(client.disconnect)
+    .then(client.connectNewClient)
     .then(client.signIn)
     .then(_.bind(function (data) {
       expect(data.signInResponseData.result).toBe(false);
@@ -59,7 +76,7 @@ describe("Server's Sign in system", function() {
     .done();
   }, this);
 
-  jh.it("should refuse user login if there is a corresponding account but with another password", function(callback) {
+  jh.it("should refuse user login if password is incorrect", function(callback) {
     var data = {
       port : this.options.socketport,
       signInInfo: {
@@ -68,8 +85,10 @@ describe("Server's Sign in system", function() {
       }
     };
 
-    client.connectClient(data)
+    client.connectNewClient(data)
     .then(client.signUp)
+    .then(client.disconnect)
+    .then(client.connectNewClient)
     .then(client.signIn)
     .then(_.bind(function (data) {
       expect(data.signInResponseData.result).toBe(false);
