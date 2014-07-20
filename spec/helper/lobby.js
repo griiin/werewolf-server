@@ -54,4 +54,16 @@ lobby.prototype.joinBadGame = function (data) {
   return deferred.promise;
 };
 
+lobby.prototype.listGames = function (data) {
+  var deferred = Q.defer();
+
+  data.client.on("list_games_response", function (responseData) {
+    data.listGamesResponseData = responseData;
+    deferred.resolve(data);
+  });
+  data.client.emit("list_games");
+
+  return deferred.promise;
+};
+
 module.exports = new lobby();

@@ -9,7 +9,7 @@ lobby = require("../helper/lobby.js");
 describe("Server's joining game system", function() {
 
   beforeEach(function() {
-    _.extend(this, serverHelper.getConfiguredServer({debug: false, verbose: false}));
+    _.extend(this, serverHelper.getConfiguredServer());
   });
 
   afterEach(serverHelper.clearAll);

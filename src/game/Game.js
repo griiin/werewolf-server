@@ -9,4 +9,8 @@ var Game = function (id, creator) {
   this.users.push(creator);
 };
 
+Game.prototype.getInfo = function () {
+  return {id : this.id, userNb : this.users.length};
+};
+
 module.exports = Game;
