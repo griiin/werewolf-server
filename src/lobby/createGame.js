@@ -13,7 +13,7 @@ exports.createGame = function (data, user, mongo, additionalData) {
   var seq = new sequence(mongo, 'game_id');
   seq.next()
   .then(function(seq) {
-    var game = new Game(seq.value, user);
+    var game = new Game(seq.value, user, data.roles, data.language);
     additionalData.games.push(game);
     user.socket.emit("create_game_response", { result: true, id: seq.value });
     additionalData.callback(user, game);

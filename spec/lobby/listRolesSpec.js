@@ -16,8 +16,7 @@ describe("Server's list roles system", function() {
 
   jh.it("should call listRoles module when a client ask for them", function(callback) {
     var data = {
-      port : this.options.socketport,
-      signUpInfo: client.getBasicSignUpInfo()
+      port : this.options.socketport
     };
     spyOn(require('../../src/lobby/listRoles'), 'listRoles').andCallThrough();
 
@@ -33,8 +32,7 @@ describe("Server's list roles system", function() {
 
   jh.it("should send the roles to a client when he ask for them", function(callback) {
     var data = {
-      port : this.options.socketport,
-      signUpInfo: client.getBasicSignUpInfo()
+      port : this.options.socketport
     };
     client.connectNewClient(data)
     .then(client.signUp)
@@ -48,8 +46,7 @@ describe("Server's list roles system", function() {
 
   jh.it("should refuse to send the roles a second time", function(callback) {
     var data = {
-      port : this.options.socketport,
-      signUpInfo: client.getBasicSignUpInfo()
+      port : this.options.socketport
     };
     client.connectNewClient(data)
     .then(client.signUp)
