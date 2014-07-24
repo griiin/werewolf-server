@@ -17,6 +17,21 @@ client.prototype.connectNewClient = function (data) {
   data.client.on('connect', function() {
     deferred.resolve(data);
   });
+
+  // listeners
+  if (data.listeners) {
+    if (!data.players) {
+      data.players = [];
+    }
+    var receivedData = {};
+    _.forEach(data.listeners, function (listener) {
+      receivedData[listener] = [];
+      data.client.on(listener, function (response) {
+        receivedData[listener].push(response);
+      });
+    });
+    data.players.push(receivedData);
+  }
   return deferred.promise;
 };
 
