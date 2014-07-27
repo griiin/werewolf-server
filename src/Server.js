@@ -109,7 +109,7 @@ Server.prototype.onClientConnection = function (socket) {
 Server.prototype.onClientDisconnection = function (socket) {
   socket.on('disconnect', _.bind(function () {
     _.forEach(this.games, function (game) {
-      game.removeFromSocket(socket);
+      game.removeClientBySocket(socket);
     });
     _.remove(this.games, function (game) {
       return game.players.length === 0;

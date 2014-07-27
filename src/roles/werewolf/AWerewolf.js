@@ -7,8 +7,8 @@ var AWerewolf = function () {
 
 };
 
-AWerewolf.team = 'werewolf';
+AWerewolf.prototype.team = 'werewolf';
 
-_.extend(AWerewolf, ARole);
+_.extend(AWerewolf.prototype, ARole.prototype);
 
 module.exports = AWerewolf;

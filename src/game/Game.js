@@ -10,6 +10,7 @@ var Game = function (id, creator, roles, language) {
   this.players.push(new Player(creator));
   this.roles = roles;
   this.language = language;
+  this.started = false;
 };
 
 Game.prototype.getInfo = function () {
@@ -35,7 +36,7 @@ Game.prototype.tryAddUser = function (user) {
   return true;
 };
 
-Game.prototype.removeFromSocket = function (socket) {
+Game.prototype.removeClientBySocket = function (socket) {
   _.remove(this.players, function (player) {
     return player.getClient().socket === socket;
   });
@@ -70,15 +71,6 @@ Game.prototype.contains = function (client) {
   });
 };
 /*
-it should send a broadcast when an user is connected
-it should launch the game when all users are here
-it should refuse user's connection if the game is full
-it should send the role to the user
-it should stop when every one has left
-
-game summary
-it should send a summry at the end of the game
-
 it should start a city hall at the begin
 city hall [without vote]
 it should allow user sending a message
@@ -123,7 +115,16 @@ it should launch tribunal summary
 */
 
 Game.prototype.start = function () {
-  this.definesRoles();
+  this.started = true;
+  Q.fcall(_.bind(this.definesRoles, this))
+  .delay(1)
+  .then(_.bind(function () {
+    while (!this.hasReachedConclusion()) {
+      //
+    }
+    this.launchGameSummary();
+  }, this))
+  .done();
 
 
   // this.definesRoles({duration: 10})
@@ -141,7 +142,34 @@ Game.prototype.start = function () {
   //   // // // // // //   this.launchTribunalSummary({duration: 5, lynched: lynched});
   //   // // // // // }
   // }
-  // // this.launchGameSummary({duration: 15});
+  // // this.launchGameSummary();
+};
+
+Game.prototype.launchGameSummary = function () {
+  var victoriousTeam = this.getVictoriousTeam();
+  _.forEach(this.players, function (player) {
+    var msg = player.role.team === victoriousTeam ? 'You\'ve won' : 'You\'ve loose';
+    player.emit("end_game", msg);
+  });
+};
+
+Game.prototype.hasReachedConclusion = function () {
+  return this.getVictoriousTeam() !== null;
+};
+
+Game.prototype.getVictoriousTeam = function () {
+  var aliveCitizens = _.where(this.players, function (player) {
+    return player.role.isAlive && player.role.team === 'town';
+  });
+  var aliveWerewolves = _.where(this.players, function (player) {
+    return player.role.isAlive && player.role.team === 'werewolf';
+  });
+
+  if (aliveCitizens.length > 0 && aliveWerewolves.length > 0) {
+    return null;
+  } else {
+    return aliveCitizens.length > 0 ? 'town' : 'werewolf';
+  }
 };
 
 Game.prototype.definesRoles = function () {
@@ -160,5 +188,11 @@ Game.prototype.definesRoles = function () {
     player.emit("your_role", {roleName: player.role.roleName});
   });
 };
+
+function delay(s) {
+  var deferred = Q.defer();
+  setTimeout(deferred.resolve, s * 1);
+  return deferred.promise;
+}
 
 module.exports = Game;

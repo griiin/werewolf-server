@@ -4,7 +4,7 @@ log = require('../../misc/log.js')(),
 AWerewolf = require('./AWerewolf');
 
 var Werewolf = function () {
-
+  this.isAlive = false;
 };
 
 Werewolf.prototype.specialPower = function () {
@@ -13,6 +13,6 @@ Werewolf.prototype.specialPower = function () {
 
 Werewolf.roleName = 'werewolf';
 
-_.extend(Werewolf, AWerewolf);
+_.extend(Werewolf.prototype, AWerewolf.prototype);
 
 module.exports = Werewolf;

@@ -6,4 +6,10 @@ var ARole = function () {
 
 };
 
+ARole.prototype.isAlive = true;
+
+ARole.prototype.getIsAlive = function () {
+  return this.isAlive;
+};
+
 module.exports = ARole;

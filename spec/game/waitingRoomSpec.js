@@ -1,4 +1,3 @@
-
 var Q = require("Q"),
 _ = require("lodash"),
 log = require("../../src/misc/log.js")(),
@@ -9,7 +8,7 @@ lobby = require("../helper/lobby.js");
 
 describe("Game's Waiting room system", function() {
   beforeEach(function() {
-    _.extend(this, serverHelper.getConfiguredServer({debug: true, verbose: false}));
+    _.extend(this, serverHelper.getConfiguredServer({debug: false, verbose: false}));
   });
 
   afterEach(serverHelper.clearAll);

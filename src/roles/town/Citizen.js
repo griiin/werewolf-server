@@ -13,6 +13,6 @@ Citizen.prototype.specialPower = function () {
 
 Citizen.roleName = 'citizen';
 
-_.extend(Citizen, ATown);
+_.extend(Citizen.prototype, ATown.prototype);
 
 module.exports = Citizen;
