@@ -1,7 +1,4 @@
-/*
-todo:
-it should stop when every one has left
-*/
+
 var Q = require("Q"),
 _ = require("lodash"),
 log = require("../../src/misc/log.js")(),
@@ -130,6 +127,40 @@ describe("Game's Waiting room system", function() {
     .then(_.bind(function (data) {
       var response = data.players[0].your_role;
       expect(response.length).not.toBe(0);
+      callback();
+    }, this))
+    .done();
+  }, this);
+
+  jh.it("should stop when every one has left", function (callback) {
+    var data = {
+      port : this.options.socketport,
+      listeners: ['your_role']
+    };
+
+    client.connectNewClient(data)
+    .then(client.signUp)
+    .then(lobby.createGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(lobby.allClientsLeaveGame)
+    .then(lobby.listGames)
+    .then(_.bind(function (data) {
+      expect(data.listGamesResponseData.result).toBe(true);
+      expect(data.listGamesResponseData.games.length).toBe(0);
       callback();
     }, this))
     .done();

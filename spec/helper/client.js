@@ -8,11 +8,18 @@ var client = function () {
 
 client.prototype.connectNewClient = function (data) {
   var deferred = Q.defer();
+
   data.client = require('socket.io-client').connect('http://localhost:' + data.port, {
     'reconnection delay' : 0,
     'reopen delay' : 0,
     'force new connection' : true
   });
+
+  // save clients
+  if (!data.clients) {
+    data.clients = [];
+  }
+  data.clients.push(data.client);
 
   data.client.on('connect', function() {
     deferred.resolve(data);

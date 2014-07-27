@@ -70,6 +70,7 @@ lobby.prototype.listGames = function (data) {
 };
 
 lobby.prototype.leaveGame = function (data) {
+
   var deferred = Q.defer();
 
   data.client.on("leave_game_response", function (responseData) {
@@ -80,6 +81,34 @@ lobby.prototype.leaveGame = function (data) {
 
   return deferred.promise;
 };
+
+lobby.prototype.allClientsLeaveGame = function (data) {
+  var deferred = Q.defer();
+
+  var toWait = [];
+  _.forEach(data.clients, function (client) {
+    toWait.push(makePlayerLeaveGame(client));
+  });
+
+  Q.all(toWait)
+  .then(function () {
+    deferred.resolve(data);
+  })
+  .done();
+
+  return deferred.promise;
+};
+
+function makePlayerLeaveGame (client) {
+  var deferred = Q.defer();
+
+  client.on("leave_game_response", function (responseData) {
+    deferred.resolve(responseData);
+  });
+  client.emit("leave_game");
+
+  return deferred.promise;
+}
 
 function getBasicGameCreationInfo () {
   return {
