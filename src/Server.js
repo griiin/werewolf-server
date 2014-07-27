@@ -109,10 +109,10 @@ Server.prototype.onClientConnection = function (socket) {
 Server.prototype.onClientDisconnection = function (socket) {
   socket.on('disconnect', _.bind(function () {
     _.forEach(this.games, function (game) {
-      _.remove(game.users, {socket: socket});
+      game.removeFromSocket(socket);
     });
     _.remove(this.games, function (game) {
-      return game.users.length === 0;
+      return game.players.length === 0;
     });
     _.remove(this.clients, socket);
     _.remove(this.users, {socket: socket});
@@ -159,7 +159,7 @@ Server.prototype.getUsernameList = function () {
 };
 
 Server.prototype.onGame = function(user, game) {
-  log.debug("user connected Oo");
+  log.info("user " + user.username + " connected to game [" + game.id + "]");
 };
 
 Server.prototype.on = function (client, actionName, func, additionalData) {

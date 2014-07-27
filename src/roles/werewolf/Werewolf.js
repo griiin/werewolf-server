@@ -8,7 +8,7 @@ var Werewolf = function () {
 };
 
 Werewolf.prototype.specialPower = function () {
-  log.error("Bazinga!");
+  log.error("Grrouuu!");
 };
 
 Werewolf.roleName = 'werewolf';

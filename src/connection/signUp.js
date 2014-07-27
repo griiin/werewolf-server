@@ -9,7 +9,7 @@ exports.signUp = function (data, socket, mongo, callback) {
   var users = mongo.collection('users');
   users.find({username: data.username}, function (error, results) {
     if (results.length > 0) {
-      log.info('[usr] sign_up failed');
+      log.info('[usr] sign_up failed: username already exist in database');
       respond(socket, "ERROR_DATABASE");
       return;
     }
@@ -25,7 +25,7 @@ exports.signUp = function (data, socket, mongo, callback) {
         callback(data, respond);
         return;
       } else {
-        log.info("[mdb] user save failed");
+        log.info("[mdb] user save failed: ", error);
         respond(socket, "ERROR_DATABASE");
       }
     });

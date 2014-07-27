@@ -1,8 +1,5 @@
 /*
-it should send a broadcast when an user is connected
-it should launch the game when all users are here
-it should refuse user's connection if the game is full
-it should send the role to the user
+todo:
 it should stop when every one has left
 */
 var Q = require("Q"),
@@ -15,7 +12,7 @@ lobby = require("../helper/lobby.js");
 
 describe("Game's Waiting room system", function() {
   beforeEach(function() {
-    _.extend(this, serverHelper.getConfiguredServer({debug: true}));
+    _.extend(this, serverHelper.getConfiguredServer({debug: true, verbose: false}));
   });
 
   afterEach(serverHelper.clearAll);
@@ -65,8 +62,73 @@ describe("Game's Waiting room system", function() {
     .then(client.signUpNew)
     .then(lobby.joinGame)
     .then(_.bind(function (data) {
-      log.debug(data.players);
       var response = data.players[0].game_start;
+      expect(response.length).not.toBe(0);
+      callback();
+    }, this))
+    .done();
+  }, this);
+
+  jh.it("should refuse user's connection if the game is full", function (callback) {
+    var data = {
+      port : this.options.socketport,
+      listeners: ['game_start']
+    };
+
+    client.connectNewClient(data)
+    .then(client.signUp)
+    .then(lobby.createGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(_.bind(function (data) {
+      expect(data.joinGameResponseData.result).toBe(false);
+      callback();
+    }, this))
+    .done();
+  }, this);
+
+  jh.it("should send users their roles", function (callback) {
+    var data = {
+      port : this.options.socketport,
+      listeners: ['your_role']
+    };
+
+    client.connectNewClient(data)
+    .then(client.signUp)
+    .then(lobby.createGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(_.bind(function (data) {
+      var response = data.players[0].your_role;
       expect(response.length).not.toBe(0);
       callback();
     }, this))

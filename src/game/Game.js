@@ -1,12 +1,13 @@
 var _ = require('lodash'),
 Q = require("Q"),
 log = require('../misc/log.js')(),
+Player = require('./Player.js'),
 roles = require('../roles/roles');
 
 var Game = function (id, creator, roles, language) {
   this.id = id;
-  this.users = [];
-  this.users.push(creator);
+  this.players = [];
+  this.players.push(new Player(creator));
   this.roles = roles;
   this.language = language;
 };
@@ -14,37 +15,42 @@ var Game = function (id, creator, roles, language) {
 Game.prototype.getInfo = function () {
   return {
     id : this.id,
-    userNb : this.users.length,
+    userNb : this.players.length,
     roles: this.roles,
     language: this.language
   };
 };
 
 Game.prototype.tryAddUser = function (user) {
-  if (this.users.length >= this.maxUser()) {
+  if (this.players.length >= this.maxUser()) {
     return false;
   }
-  this.users.push(user);
-  this.broadcast("new_player", {playerNb: this.users.length});
-  log.debug(this.maxUser(), this.users.length);
-  if (this.users.length >= this.maxUser()) {
-    this.broadcast("game_start", {playerNb: this.users.length});
+  this.players.push(new Player(user));
+  this.broadcast("new_player", {playerNb: this.players.length});
+  if (this.players.length >= this.maxUser()) {
+    this.broadcast("game_start", {playerNb: this.players.length});
     this.start();
   }
 
   return true;
 };
 
-Game.prototype.broadcast = function (cmd, data) {
-  _.forEach(this.users, function (user) {
-    user.socket.emit(cmd, data);
+Game.prototype.removeFromSocket = function (socket) {
+  _.remove(this.players, function (player) {
+    return player.getClient().socket === socket;
   });
 };
 
-Game.prototype.tryRemoveUser = function (userToRemove) {
-  if (this.contains(userToRemove)) {
-    _.remove(this.users, function (user) {
-      return user === userToRemove;
+Game.prototype.broadcast = function (cmd, data) {
+  _.forEach(this.players, function (player) {
+    player.emit(cmd, data);
+  });
+};
+
+Game.prototype.tryRemoveUser = function (clientToRemove) {
+  if (this.contains(clientToRemove)) {
+    _.remove(this.players, function (player) {
+      return player.getClient() === clientToRemove;
     });
     return true;
   }
@@ -58,8 +64,10 @@ Game.prototype.maxUser = function () {
   });
 };
 
-Game.prototype.contains = function (user) {
-  return _.contains(this.users, user);
+Game.prototype.contains = function (client) {
+  return _.where(this.players, function (player) {
+    return player.getClient() === client;
+  });
 };
 /*
 it should send a broadcast when an user is connected
@@ -115,7 +123,10 @@ it should launch tribunal summary
 */
 
 Game.prototype.start = function () {
-  // this.definesRoles({duration: 10});
+  this.definesRoles();
+
+
+  // this.definesRoles({duration: 10})
   // // // this.launchCityHall({duration: 50, skipVote: true});
   // while (!this.hasReachedConclusion()) {
   //   // // // var nightEvents = this.launchNight({duration: 45});
@@ -131,6 +142,23 @@ Game.prototype.start = function () {
   //   // // // // // }
   // }
   // // this.launchGameSummary({duration: 15});
+};
+
+Game.prototype.definesRoles = function () {
+  var playersRole = [];
+  _.forEach(this.roles, function (role) {
+    for (var i = 0; i < role.nb; ++i) {
+      playersRole.push(roles.factory(role.roleName));
+    }
+  });
+  playersRole = _.shuffle(playersRole);
+  var i = 0;
+  _.forEach(this.players, function (player) {
+    player.role = playersRole[i++];
+  });
+  _.forEach(this.players, function (player) {
+    player.emit("your_role", {roleName: player.role.roleName});
+  });
 };
 
 module.exports = Game;
