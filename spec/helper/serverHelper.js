@@ -17,10 +17,10 @@ serverHelper.prototype.getConfiguredServer = _.bind(function (settings) {
 
   //
   this.options = {
-    dbname: 'werewolf-test-0005',
+    dbname: 'werewolf-test-0006',
     dbhost: '127.0.0.1',
     dbport: 27017,
-    socketport: 4253,
+    socketport: 4254,
     displayTime: false,
     verbose: settings ? !!settings.verbose : false,
     debug: settings ? !!settings.debug : false
@@ -30,6 +30,10 @@ serverHelper.prototype.getConfiguredServer = _.bind(function (settings) {
   this.server.start();
 
   // this.cleanDB();
+
+  // Set delayFactor to zero
+  var Game = require('../../src/game/Game.js');
+  Game.delayFactor = 0;
 
   return { server: this.server, options: this.options };
 }, serverHelper.prototype);

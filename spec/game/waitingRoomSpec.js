@@ -25,6 +25,7 @@ describe("Game's Waiting room system", function() {
     .then(client.connectNewClient)
     .then(client.signUpNew)
     .then(lobby.joinGame)
+    .delay(20)
     .then(_.bind(function (data) {
       var response = data.players[0].new_player;
       expect(response[0].playerNb).toBe(2);
@@ -140,6 +141,12 @@ describe("Game's Waiting room system", function() {
     client.connectNewClient(data)
     .then(client.signUp)
     .then(lobby.createGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
     .then(client.connectNewClient)
     .then(client.signUpNew)
     .then(lobby.joinGame)

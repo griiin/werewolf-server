@@ -5,6 +5,7 @@ Player = require('./Player.js'),
 roles = require('../roles/roles');
 
 var Game = function (id, creator, roles, language) {
+  log.info ("[gme] " + creator.username + " create game n" + id);
   this.id = id;
   this.players = [];
   this.players.push(new Player(creator));
@@ -37,9 +38,27 @@ Game.prototype.tryAddUser = function (user) {
 };
 
 Game.prototype.removeClientBySocket = function (socket) {
-  _.remove(this.players, function (player) {
-    return player.getClient().socket === socket;
+  if (!this.started) {
+    _.remove(this.players, function (player) {
+      return player.getClient().socket === socket;
+    });
+  } else {
+    _(this.players).where(function (player) {
+      return player.getClient().socket === socket;
+    }).forEach(function (player) {
+      player.role.Die();
+    });
+  }
+};
+
+Game.prototype.isEmpty = function () {
+  if (!this.started) {
+    return this.players.length === 0;
+  }
+  var alivePlayers = _.where(this.players, function (player) {
+    return player.role.getIsAlive();
   });
+  return !alivePlayers || alivePlayers.length === 0;
 };
 
 Game.prototype.broadcast = function (cmd, data) {
@@ -50,9 +69,17 @@ Game.prototype.broadcast = function (cmd, data) {
 
 Game.prototype.tryRemoveUser = function (clientToRemove) {
   if (this.contains(clientToRemove)) {
-    _.remove(this.players, function (player) {
-      return player.getClient() === clientToRemove;
-    });
+    if (!this.started) {
+      _.remove(this.players, function (player) {
+        return player.getClient() === clientToRemove;
+      });
+    } else {
+      _(this.players).where(function (player) {
+        return player.getClient() === clientToRemove;
+      }).forEach(_.bind(function (player) {
+        player.role.Die();
+      }, this));
+    }
     return true;
   }
   return false;
@@ -67,17 +94,14 @@ Game.prototype.maxUser = function () {
 
 Game.prototype.contains = function (client) {
   return _.where(this.players, function (player) {
-    return player.getClient() === client;
+    if (!this.started) {
+      return player.getClient() === client;
+    } else {
+      return player.getClient() === client && player.role.launch();
+    }
   });
 };
 /*
-it should start a city hall at the begin
-city hall [without vote]
-it should allow user sending a message
-it should allow user receiving a message
-it should denied user vote
-it should stop allowing conversation after its duration
-
 it should launchNight
 launch night
 it should allow werewolf sending a message
@@ -114,10 +138,14 @@ it should launch tribunal summary
 
 */
 
+Game.delayFactor = 1000;
+
 Game.prototype.start = function () {
   this.started = true;
   Q.fcall(_.bind(this.definesRoles, this))
-  .delay(1)
+  .delay(10 * Game.delayFactor)
+  .then(_.bind(this.launchCityHallLite, this))
+  .delay(60 * Game.delayFactor)
   .then(_.bind(function () {
     while (!this.hasReachedConclusion()) {
       //
@@ -143,6 +171,14 @@ Game.prototype.start = function () {
   //   // // // // // }
   // }
   // // this.launchGameSummary();
+};
+
+Game.prototype.launchCityHallLite = function () {
+  return this.launchCityHall(true);
+};
+
+Game.prototype.launchCityHall = function (isLite) {
+  this.broadcast("cityhall_start");
 };
 
 Game.prototype.launchGameSummary = function () {

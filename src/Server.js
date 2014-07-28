@@ -111,9 +111,7 @@ Server.prototype.onClientDisconnection = function (socket) {
     _.forEach(this.games, function (game) {
       game.removeClientBySocket(socket);
     });
-    _.remove(this.games, function (game) {
-      return game.players.length === 0;
-    });
+    this.cleanOldGames();
     _.remove(this.clients, socket);
     _.remove(this.users, {socket: socket});
   }, this));
@@ -162,12 +160,20 @@ Server.prototype.onGame = function(user, game) {
   log.info("user " + user.username + " connected to game [" + game.id + "]");
 };
 
+Server.prototype.cleanOldGames = function () {
+  _.remove(this.games, function (game) {
+    return game.isEmpty();
+  });
+};
+
 Server.prototype.on = function (client, actionName, func, additionalData) {
   // if the client isn't identify yet, client == client's socket
   var socket = client.socket ? client.socket : client;
+  var username = client.username ? client.username : "";
 
   socket.on(actionName, _.bind(function(data) {
-    log.input("[usr] '" + this.getClientInfo(socket) + "' " + actionName, "\ndata:\n ", data);
+    this.cleanOldGames();
+    log.input("[usr] '" + this.getClientInfo(socket) + "' (" + username + ") " + actionName, "\ndata:\n ", data);
     func(data, client, this.mongo, additionalData);
   }, this));
 };

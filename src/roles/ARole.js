@@ -12,4 +12,8 @@ ARole.prototype.getIsAlive = function () {
   return this.isAlive;
 };
 
+ARole.prototype.Die = function () {
+  this.isAlive = false;
+};
+
 module.exports = ARole;
