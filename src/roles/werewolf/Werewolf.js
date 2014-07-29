@@ -4,7 +4,7 @@ log = require('../../misc/log.js')(),
 AWerewolf = require('./AWerewolf');
 
 var Werewolf = function () {
-  this.isAlive = false;
+
 };
 
 Werewolf.prototype.specialPower = function () {
