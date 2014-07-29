@@ -148,12 +148,7 @@ Game.prototype.start = function () {
   .then(_.bind(this.launchCityHallLite, this))
   .delay(60 * Game.delayFactor)
   .then(_.bind(this.stopCityHall, this))
-  .then(_.bind(function () {
-    while (!this.hasReachedConclusion()) {
-      //
-    }
-    this.launchGameSummary();
-  }, this))
+  .then(_.bind(this.gameLoop, this))
   .done();
 
 
@@ -175,16 +170,42 @@ Game.prototype.start = function () {
   // // this.launchGameSummary();
 };
 
+Game.prototype.gameLoop = function () {
+    if (!this.hasReachedConclusion()) {
+      Q.fcall(_.bind(this.launchNight, this))
+      .delay(60 * Game.delayFactor)
+      .then(_.bind(this.stopNight, this))
+      .delay(10 * Game.delayFactor)
+      .then(_.bind(this.launchCityHall, this))
+      .delay(60 * Game.delayFactor)
+      .then(_.bind(this.stopCityHall, this))
+      .then(_.bind(this.gameLoop, this))
+      .done();
+    } else {
+    this.launchGameSummary();
+    }
+};
+
+Game.prototype.launchNight = function () {
+  log.info("[gme] launching night");
+};
+
+Game.prototype.stopNight = function () {
+  log.info("[gme] stopping night");
+};
+
 Game.prototype.launchCityHallLite = function () {
   return this.launchCityHall(false);
 };
 
 Game.prototype.launchCityHall = function (isVoteEnabled) {
+  log.info("[gme] launching city hall");
   this.broadcast("cityhall_start", {isVoteEnabled: isVoteEnabled});
   this.startListenning();
 };
 
 Game.prototype.stopCityHall = function (isLite) {
+  log.info("[gme] stopping city hall");
   this.broadcast("cityhall_stop");
   this.stopListenning();
 };
