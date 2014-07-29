@@ -14,7 +14,7 @@ jh = require("../helper/jasmineHelper.js")(),
 client = require("../helper/client.js"),
 lobby = require("../helper/lobby.js");
 
-describe("Game's summary system", function() {
+describe("Game's city hall", function() {
   beforeEach(function() {
     _.extend(this, serverHelper.getConfiguredServer({debug: false, verbose: false}));
   });
@@ -73,12 +73,10 @@ describe("Game's summary system", function() {
     .then(client.connectNewClient)
     .then(_.bind(function (data) {
       var lastClient = data.client;
-      log.debug("?");
       var Game = require('../../src/game/Game.js');
       Game.delayFactor = 2;
       var flag = false;
       lastClient.on("cityhall_start", function (response) {
-        log.debug("1?");
         lastClient.on("msg", function (response) {
           log.debug(response);
           if (response) {
@@ -87,7 +85,6 @@ describe("Game's summary system", function() {
         });
         lastClient.emit("msg", "hello");
         lastClient.on("cityhall_stop", function (response) {
-          log.debug("2?");
           expect(flag).toBe(true);
           callback();
         });

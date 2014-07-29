@@ -176,11 +176,11 @@ Game.prototype.start = function () {
 };
 
 Game.prototype.launchCityHallLite = function () {
-  return this.launchCityHall(true);
+  return this.launchCityHall(false);
 };
 
-Game.prototype.launchCityHall = function (isLite) {
-  this.broadcast("cityhall_start");
+Game.prototype.launchCityHall = function (isVoteEnabled) {
+  this.broadcast("cityhall_start", {isVoteEnabled: isVoteEnabled});
   this.startListenning();
 };
 
