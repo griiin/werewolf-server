@@ -1,8 +1,6 @@
 /*
 todo:
 city hall [without vote]
-it should allow user sending a message
-it should allow user receiving a message
 it should denied user vote
 it should stop allowing conversation after its duration
 */
@@ -78,7 +76,6 @@ describe("Game's city hall", function() {
       var flag = false;
       lastClient.on("cityhall_start", function (response) {
         lastClient.on("msg", function (response) {
-          log.debug(response);
           if (response) {
             flag = true;
           }
@@ -86,6 +83,48 @@ describe("Game's city hall", function() {
         lastClient.emit("msg", "hello");
         lastClient.on("cityhall_stop", function (response) {
           expect(flag).toBe(true);
+          callback();
+        });
+      });
+      return data;
+    }, this))
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .done();
+  }, this);
+
+  jh.it("should denied user vote", function (callback) {
+    client.connectNewClient({port : this.options.socketport})
+    .then(client.signUp)
+    .then(lobby.createGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(_.bind(function (data) {
+      var lastClient = data.client;
+      var Game = require('../../src/game/Game.js');
+      Game.delayFactor = 2;
+      var flag = false;
+      lastClient.on("cityhall_start", function (response) {
+        expect(response.isVoteEnabled).toBe(false);
+        lastClient.on("vote_response", function (response) {
+          if (response) {
+            flag = true;
+          }
+        });
+        lastClient.emit("vote");
+        lastClient.on("cityhall_stop", function (response) {
+          expect(flag).toBe(false);
           callback();
         });
       });
