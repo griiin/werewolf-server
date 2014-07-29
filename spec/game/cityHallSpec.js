@@ -1,6 +1,5 @@
 /*
 todo:
-it should start a city hall at the begin
 city hall [without vote]
 it should allow user sending a message
 it should allow user receiving a message
@@ -17,7 +16,7 @@ lobby = require("../helper/lobby.js");
 
 describe("Game's summary system", function() {
   beforeEach(function() {
-    _.extend(this, serverHelper.getConfiguredServer({debug: true, verbose: false}));
+    _.extend(this, serverHelper.getConfiguredServer({debug: false, verbose: false}));
   });
 
   afterEach(serverHelper.clearAll);
@@ -46,19 +45,57 @@ describe("Game's summary system", function() {
     .then(client.connectNewClient)
     .then(client.signUpNew)
     .then(lobby.joinGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(lobby.allClientsLeaveGame)
     .delay(20)
     .then(_.bind(function (data) {
       var response = data.players[0].cityhall_start;
       expect(response.length).not.toBe(0);
       callback();
     }, this))
+    .done();
+  }, this);
+
+  jh.it("should allow user sending and receiving message", function (callback) {
+    client.connectNewClient({port : this.options.socketport})
+    .then(client.signUp)
+    .then(lobby.createGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(_.bind(function (data) {
+      var lastClient = data.client;
+      log.debug("?");
+      var Game = require('../../src/game/Game.js');
+      Game.delayFactor = 2;
+      var flag = false;
+      lastClient.on("cityhall_start", function (response) {
+        log.debug("1?");
+        lastClient.on("msg", function (response) {
+          log.debug(response);
+          if (response) {
+            flag = true;
+          }
+        });
+        lastClient.emit("msg", "hello");
+        lastClient.on("cityhall_stop", function (response) {
+          log.debug("2?");
+          expect(flag).toBe(true);
+          callback();
+        });
+      });
+      return data;
+    }, this))
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
     .done();
   }, this);
 });

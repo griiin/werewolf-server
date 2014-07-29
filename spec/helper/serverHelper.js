@@ -17,10 +17,10 @@ serverHelper.prototype.getConfiguredServer = _.bind(function (settings) {
 
   //
   this.options = {
-    dbname: 'werewolf-test-0006',
+    dbname: 'werewolf-test-0005',
     dbhost: '127.0.0.1',
     dbport: 27017,
-    socketport: 4254,
+    socketport: 4253,
     displayTime: false,
     verbose: settings ? !!settings.verbose : false,
     debug: settings ? !!settings.debug : false

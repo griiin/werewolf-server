@@ -141,11 +141,13 @@ it should launch tribunal summary
 Game.delayFactor = 1000;
 
 Game.prototype.start = function () {
+  log.info('[gme] launching game id' + this.id);
   this.started = true;
   Q.fcall(_.bind(this.definesRoles, this))
   .delay(10 * Game.delayFactor)
   .then(_.bind(this.launchCityHallLite, this))
   .delay(60 * Game.delayFactor)
+  .then(_.bind(this.stopCityHall, this))
   .then(_.bind(function () {
     while (!this.hasReachedConclusion()) {
       //
@@ -179,6 +181,26 @@ Game.prototype.launchCityHallLite = function () {
 
 Game.prototype.launchCityHall = function (isLite) {
   this.broadcast("cityhall_start");
+  this.startListenning();
+};
+
+Game.prototype.stopCityHall = function (isLite) {
+  this.broadcast("cityhall_stop");
+  this.stopListenning();
+};
+
+Game.prototype.stopListenning = function () {
+  _.forEach(this.players, _.bind(function (player) {
+    player.getClient().socket.removeAllListeners("msg");
+  }, this));
+};
+
+Game.prototype.startListenning = function () {
+  _.forEach(this.players, _.bind(function (player) {
+    player.getClient().socket.on("msg", _.bind(function (msg) {
+      this.broadcast("msg", { player: player.getClient().username , msg: msg});
+    }, this));
+  }, this));
 };
 
 Game.prototype.launchGameSummary = function () {
