@@ -1,9 +1,3 @@
-/*
-todo:
-city hall [without vote]
-it should denied user vote
-it should stop allowing conversation after its duration
-*/
 var Q = require("Q"),
 _ = require("lodash"),
 log = require("../../src/misc/log.js")(),
@@ -134,4 +128,46 @@ describe("Game's city hall", function() {
     .then(lobby.joinGame)
     .done();
   }, this);
+
+  jh.it("should denied conversation after its duration", function (callback) {
+    client.connectNewClient({port : this.options.socketport})
+    .then(client.signUp)
+    .then(lobby.createGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .then(client.connectNewClient)
+    .then(_.bind(function (data) {
+      var lastClient = data.client;
+      var Game = require('../../src/game/Game.js');
+      Game.delayFactor = 2;
+      var flag = false;
+      lastClient.on("cityhall_stop", function (response) {
+        lastClient.on("msg", function (response) {
+          if (response) {
+            flag = true;
+          }
+        });
+        lastClient.emit("msg", "hello");
+        lastClient.on("end_game", function (response) {
+          expect(flag).toBe(false);
+          callback();
+        });
+      });
+      return data;
+    }, this))
+    .then(client.signUpNew)
+    .then(lobby.joinGame)
+    .done();
+  }, this);
+
 });
