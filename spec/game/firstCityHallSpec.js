@@ -84,7 +84,7 @@ describe("Game's first city hall", function() {
       Game.delayFactor = 2;
       var flag = false;
       lastClient.on("cityhall_start", function (response) {
-        expect(response.isVoteEnabled).toBe(false);
+        expect(response.isVoteDisabled).toBe(true);
         lastClient.on("vote_response", function (response) {
           if (response) {
             flag = true;

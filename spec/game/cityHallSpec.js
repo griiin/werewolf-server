@@ -1,3 +1,14 @@
+/*
+it should launch launchCityHall
+city hall [with vote]
+it should allow user sending a message
+it should allow user receiving a message
+it should stop allowing conversation after its duration
+it should allow user vote
+it should denied actions after its duration
+it should start another night if vote are unconclusive
+*/
+
 var Q = require("Q"),
 _ = require("lodash"),
 log = require("../../src/misc/log.js")(),
@@ -10,87 +21,106 @@ game = require("../helper/game.js");
 describe("Game's city hall", function() {
   beforeEach(function() {
     _.extend(this, serverHelper.getConfiguredServer({debug: false, verbose: false}));
-
-    // all werewolf so the game will finish instantly
-    var Werewolf = require('../../src/roles/werewolf/Werewolf.js');
-    Werewolf.prototype.isAlive = false;
   });
 
   afterEach(serverHelper.clearAll);
 
-  jh.it("should allow user sending and receiving message", function (callback) {
+  jh.it("should launch a city hall with vote enabled if nothing has happened at the last night", function (callback) {
     game.prepareClassicGame({port : this.options.socketport})
     .then(_.bind(function (data) {
       var lastClient = data.client;
       var Game = require('../../src/game/Game.js');
       Game.delayFactor = 2;
-      var flag = false;
+      var counter = 0;
       lastClient.on("cityhall_start", function (response) {
-        lastClient.on("msg", function (response) {
-          if (response) {
-            flag = true;
-          }
-        });
-        lastClient.emit("msg", "hello");
-        lastClient.on("cityhall_stop", function (response) {
-          expect(flag).toBe(true);
+        counter++;
+        if (counter === 2) {
+          // all werewolf so the game will finish instantly
+          var Werewolf = require('../../src/roles/werewolf/Werewolf.js');
+          Werewolf.prototype.isAlive = false;
+          expect(response.isVoteDisabled).toBe(false);
           callback();
-        });
+        }
       });
       return data;
     }, this))
     .then(game.launchClassicGame)
     .done();
   }, this);
-
-  jh.it("should denied user vote", function (callback) {
-    game.prepareClassicGame({port : this.options.socketport})
-    .then(_.bind(function (data) {
-      var lastClient = data.client;
-      var Game = require('../../src/game/Game.js');
-      Game.delayFactor = 2;
-      var flag = false;
-      lastClient.on("cityhall_start", function (response) {
-        expect(response.isVoteEnabled).toBe(false);
-        lastClient.on("vote_response", function (response) {
-          if (response) {
-            flag = true;
-          }
-        });
-        lastClient.emit("vote");
-        lastClient.on("cityhall_stop", function (response) {
-          expect(flag).toBe(false);
-          callback();
-        });
-      });
-      return data;
-    }, this))
-    .then(game.launchClassicGame)
-    .done();
-  }, this);
-
-  jh.it("should denied conversation after its duration", function (callback) {
-    game.prepareClassicGame({port : this.options.socketport})
-    .then(_.bind(function (data) {
-      var lastClient = data.client;
-      var Game = require('../../src/game/Game.js');
-      Game.delayFactor = 2;
-      var flag = false;
-      lastClient.on("cityhall_stop", function (response) {
-        lastClient.on("msg", function (response) {
-          if (response) {
-            flag = true;
-          }
-        });
-        lastClient.emit("msg", "hello");
-        lastClient.on("end_game", function (response) {
-          expect(flag).toBe(false);
-          callback();
-        });
-      });
-      return data;
-    }, this))
-    .then(game.launchClassicGame)
-    .done();
-  }, this);
+  //
+  // jh.it("should allow user sending and receiving message", function (callback) {
+  //   game.prepareClassicGame({port : this.options.socketport})
+  //   .then(_.bind(function (data) {
+  //     var lastClient = data.client;
+  //     var Game = require('../../src/game/Game.js');
+  //     Game.delayFactor = 2;
+  //     var flag = false;
+  //     lastClient.on("cityhall_start", function (response) {
+  //       lastClient.on("msg", function (response) {
+  //         if (response) {
+  //           flag = true;
+  //         }
+  //       });
+  //       lastClient.emit("msg", "hello");
+  //       lastClient.on("cityhall_stop", function (response) {
+  //         expect(flag).toBe(true);
+  //         callback();
+  //       });
+  //     });
+  //     return data;
+  //   }, this))
+  //   .then(game.launchClassicGame)
+  //   .done();
+  // }, this);
+  //
+  // jh.it("should denied user vote", function (callback) {
+  //   game.prepareClassicGame({port : this.options.socketport})
+  //   .then(_.bind(function (data) {
+  //     var lastClient = data.client;
+  //     var Game = require('../../src/game/Game.js');
+  //     Game.delayFactor = 2;
+  //     var flag = false;
+  //     lastClient.on("cityhall_start", function (response) {
+  //       expect(response.isVoteEnabled).toBe(false);
+  //       lastClient.on("vote_response", function (response) {
+  //         if (response) {
+  //           flag = true;
+  //         }
+  //       });
+  //       lastClient.emit("vote");
+  //       lastClient.on("cityhall_stop", function (response) {
+  //         expect(flag).toBe(false);
+  //         callback();
+  //       });
+  //     });
+  //     return data;
+  //   }, this))
+  //   .then(game.launchClassicGame)
+  //   .done();
+  // }, this);
+  //
+  // jh.it("should denied conversation after its duration", function (callback) {
+  //   game.prepareClassicGame({port : this.options.socketport})
+  //   .then(_.bind(function (data) {
+  //     var lastClient = data.client;
+  //     var Game = require('../../src/game/Game.js');
+  //     Game.delayFactor = 2;
+  //     var flag = false;
+  //     lastClient.on("cityhall_stop", function (response) {
+  //       lastClient.on("msg", function (response) {
+  //         if (response) {
+  //           flag = true;
+  //         }
+  //       });
+  //       lastClient.emit("msg", "hello");
+  //       lastClient.on("end_game", function (response) {
+  //         expect(flag).toBe(false);
+  //         callback();
+  //       });
+  //     });
+  //     return data;
+  //   }, this))
+  //   .then(game.launchClassicGame)
+  //   .done();
+  // }, this);
 });

@@ -113,15 +113,6 @@ it should denied werewolf conversation after its duration
 it should stop game if night is conclusive
 it should launch night summary
 
-it should launch launchCityHall
-city hall [with vote]
-it should allow user sending a message
-it should allow user receiving a message
-it should stop allowing conversation after its duration
-it should allow user vote
-it should denied actions after its duration
-it should start another night if vote are unconclusive
-
 it should start tribunal if vote are conclusive
 tribunal
 it should allow accused player to send message
@@ -141,7 +132,7 @@ it should launch tribunal summary
 Game.delayFactor = 1000;
 
 Game.prototype.start = function () {
-  log.info('[gme] launching game id' + this.id);
+  log.info('[gme] launching game id' + this.id + " [players:]", _.map(this.players, function (player) { return player.getClient().username; }));
   this.started = true;
   Q.fcall(_.bind(this.definesRoles, this))
   .delay(10 * Game.delayFactor)
@@ -195,12 +186,12 @@ Game.prototype.stopNight = function () {
 };
 
 Game.prototype.launchCityHallLite = function () {
-  return this.launchCityHall(false);
+  return this.launchCityHall(true);
 };
 
-Game.prototype.launchCityHall = function (isVoteEnabled) {
+Game.prototype.launchCityHall = function (isVoteDisabled) {
   log.info("[gme] launching city hall");
-  this.broadcast("cityhall_start", {isVoteEnabled: isVoteEnabled});
+  this.broadcast("cityhall_start", {isVoteDisabled: !!isVoteDisabled});
   this.startListenning();
 };
 
