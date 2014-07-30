@@ -1,8 +1,8 @@
 /*
-it should allow user sending a message
-it should allow user receiving a message
-it should stop allowing conversation after its duration
 it should allow user vote
+it should allow cancel vote
+it should denied vote against himself
+it should allow skip vote
 it should denied actions after its duration
 it should start another night if vote are unconclusive
 */
@@ -28,7 +28,7 @@ describe("Game's city hall", function() {
     .then(_.bind(function (data) {
       var lastClient = data.client;
       var Game = require('../../src/game/Game.js');
-      Game.delayFactor = 2;
+      Game.delayFactor = 1;
       var counter = 0;
       lastClient.on("cityhall_start", function (response) {
         counter++;
@@ -51,7 +51,7 @@ describe("Game's city hall", function() {
     .then(_.bind(function (data) {
       var lastClient = data.client;
       var Game = require('../../src/game/Game.js');
-      Game.delayFactor = 2;
+      Game.delayFactor = 1;
       var counter = 0;
       var flag = false;
       lastClient.on("cityhall_start", function (response) {
@@ -83,7 +83,7 @@ describe("Game's city hall", function() {
   //   .then(_.bind(function (data) {
   //     var lastClient = data.client;
   //     var Game = require('../../src/game/Game.js');
-  //     Game.delayFactor = 2;
+  //     Game.delayFactor = 1;
   //     var flag = false;
   //     lastClient.on("cityhall_start", function (response) {
   //       expect(response.isVoteEnabled).toBe(false);
@@ -109,7 +109,7 @@ describe("Game's city hall", function() {
   //   .then(_.bind(function (data) {
   //     var lastClient = data.client;
   //     var Game = require('../../src/game/Game.js');
-  //     Game.delayFactor = 2;
+  //     Game.delayFactor = 1;
   //     var flag = false;
   //     lastClient.on("cityhall_stop", function (response) {
   //       lastClient.on("msg", function (response) {
