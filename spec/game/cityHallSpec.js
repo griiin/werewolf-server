@@ -28,7 +28,7 @@ describe("Game's city hall", function() {
     .then(_.bind(function (data) {
       var lastClient = data.client;
       var Game = require('../../src/game/Game.js');
-      Game.delayFactor = 1;
+      Game.delayFactor = 0.1;
       var counter = 0;
       lastClient.on("cityhall_start", function (response) {
         counter++;
@@ -51,7 +51,7 @@ describe("Game's city hall", function() {
     .then(_.bind(function (data) {
       var lastClient = data.client;
       var Game = require('../../src/game/Game.js');
-      Game.delayFactor = 1;
+      Game.delayFactor = 0.1;
       var counter = 0;
       var flag = false;
       lastClient.on("cityhall_start", function (response) {
@@ -83,7 +83,7 @@ describe("Game's city hall", function() {
   //   .then(_.bind(function (data) {
   //     var lastClient = data.client;
   //     var Game = require('../../src/game/Game.js');
-  //     Game.delayFactor = 1;
+  //     Game.delayFactor = 0.1;
   //     var flag = false;
   //     lastClient.on("cityhall_start", function (response) {
   //       expect(response.isVoteEnabled).toBe(false);
@@ -109,7 +109,7 @@ describe("Game's city hall", function() {
   //   .then(_.bind(function (data) {
   //     var lastClient = data.client;
   //     var Game = require('../../src/game/Game.js');
-  //     Game.delayFactor = 1;
+  //     Game.delayFactor = 0.1;
   //     var flag = false;
   //     lastClient.on("cityhall_stop", function (response) {
   //       lastClient.on("msg", function (response) {
