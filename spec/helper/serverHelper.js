@@ -17,7 +17,7 @@ serverHelper.prototype.getConfiguredServer = _.bind(function (settings) {
 
   //
   this.options = {
-    dbname: 'werewolf-test-0005',
+    dbname: 'werewolf-test-0008',
     dbhost: '127.0.0.1',
     dbport: 27017,
     socketport: 4253,
@@ -57,18 +57,21 @@ serverHelper.prototype.cleanDB = _.bind(function () {
   var deferred = Q.defer();
 
   // clear db
-  var easyMongo = require('easymongo');
-  var mongo = new easyMongo({
-    dbname: this.options.dbname,
-    host: this.options.dbhost,
-    port: this.options.dbport
-  });
+  if (!serverHelper.mongo) {
+    var easyMongo = require('easymongo');
+    serverHelper.mongo = new easyMongo({
+      dbname: this.options.dbname,
+      host: this.options.dbhost,
+      port: this.options.dbport
+    });
+  }
   // clear users collection
-  var users = mongo.collection('users');
+  var users = serverHelper.mongo.collection('users');
   users.remove(function(results, err) {
     deferred.resolve();
   });
-  mongo.close();
+  // serverHelper.mongo.close();
+  // serverHelper.mongo = undefined;
 
   return deferred.promise;
 }, serverHelper.prototype);
