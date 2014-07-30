@@ -42,6 +42,7 @@ serverHelper.prototype.clearAll = _.bind(function () {
   var done = false;
   runs(_.bind(function() {
     this.server.stop();
+    this.clearProto();
     this.cleanDB()
     .then(function() {
       done = true;
@@ -52,6 +53,12 @@ serverHelper.prototype.clearAll = _.bind(function () {
     return done;
   });
 }, serverHelper.prototype);
+
+serverHelper.prototype.clearProto = function () {
+    // all werewolf so the game will finish instantly
+    var Werewolf = require('../../src/roles/werewolf/Werewolf.js');
+    Werewolf.prototype.isAlive = true;
+};
 
 serverHelper.prototype.cleanDB = _.bind(function () {
   var deferred = Q.defer();
