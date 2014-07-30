@@ -4,7 +4,8 @@ log = require("../../src/misc/log.js")(),
 serverHelper = require("../helper/serverHelper.js")(),
 jh = require("../helper/jasmineHelper.js")(),
 client = require("../helper/client.js"),
-lobby = require("../helper/lobby.js");
+lobby = require("../helper/lobby.js"),
+game = require("../helper/game.js");
 
 describe("Game's first city hall", function() {
   beforeEach(function() {
@@ -51,22 +52,7 @@ describe("Game's first city hall", function() {
   }, this);
 
   jh.it("should allow user sending and receiving message", function (callback) {
-    client.connectNewClient({port : this.options.socketport})
-    .then(client.signUp)
-    .then(lobby.createGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
+    game.prepareClassicGame({port : this.options.socketport})
     .then(_.bind(function (data) {
       var lastClient = data.client;
       var Game = require('../../src/game/Game.js');
@@ -86,28 +72,12 @@ describe("Game's first city hall", function() {
       });
       return data;
     }, this))
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
+    .then(game.launchClassicGame)
     .done();
   }, this);
 
   jh.it("should denied user vote", function (callback) {
-    client.connectNewClient({port : this.options.socketport})
-    .then(client.signUp)
-    .then(lobby.createGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
+    game.prepareClassicGame({port : this.options.socketport})
     .then(_.bind(function (data) {
       var lastClient = data.client;
       var Game = require('../../src/game/Game.js');
@@ -128,28 +98,12 @@ describe("Game's first city hall", function() {
       });
       return data;
     }, this))
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
+    .then(game.launchClassicGame)
     .done();
   }, this);
 
   jh.it("should denied conversation after its duration", function (callback) {
-    client.connectNewClient({port : this.options.socketport})
-    .then(client.signUp)
-    .then(lobby.createGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
-    .then(client.connectNewClient)
+    game.prepareClassicGame({port : this.options.socketport})
     .then(_.bind(function (data) {
       var lastClient = data.client;
       var Game = require('../../src/game/Game.js');
@@ -169,9 +123,7 @@ describe("Game's first city hall", function() {
       });
       return data;
     }, this))
-    .then(client.signUpNew)
-    .then(lobby.joinGame)
+    .then(game.launchClassicGame)
     .done();
   }, this);
-
 });

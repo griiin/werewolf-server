@@ -29,7 +29,7 @@ serverHelper.prototype.getConfiguredServer = _.bind(function (settings) {
   this.server = new Server(this.options);
   this.server.start();
 
-  // this.cleanDB();
+  this.cleanDB();
 
   // Set delayFactor to zero
   var Game = require('../../src/game/Game.js');
@@ -70,6 +70,7 @@ serverHelper.prototype.cleanDB = _.bind(function () {
   users.remove(function(results, err) {
     deferred.resolve();
   });
+
   // serverHelper.mongo.close();
   // serverHelper.mongo = undefined;
 
