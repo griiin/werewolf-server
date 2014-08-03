@@ -95,6 +95,30 @@ describe("Game's city hall", function() {
     .done();
   }, this);
 
+  jh.it("should refuse bad vote", function (callback) {
+    var cb = function (data) {
+      var flag = false;
+      data.client.on("vote_response", function (response) {
+        if (!response.result) {
+          flag = true;
+        }
+      });
+      data.client.emit("vote", {target: 'UNKNOWN_username'});
+      data.client.on("cityhall_stop", function (response) {
+        expect(flag).toBe(true);
+        callback();
+      });
+    };
+    var data = {
+      port : this.options.socketport,
+      cityHallCB: cb
+    };
+    game.prepareClassicGame(data)
+    .then(game.goToSecondCityHallAndKillAllWerewolves)
+    .then(game.launchClassicGame)
+    .done();
+  }, this);
+
   //
   // jh.it("should denied user vote", function (callback) {
   //   game.prepareClassicGame({port : this.options.socketport})
