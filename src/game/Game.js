@@ -201,6 +201,8 @@ Game.prototype.launchCityHall = function (isVoteDisabled) {
   this.startListenningMessage();
   if (!isVoteDisabled) {
     this.startListenningVote();
+    this.startListenningCancelVote();
+    this.startListenningSkipVote();
   }
 };
 
@@ -208,45 +210,76 @@ Game.prototype.stopCityHall = function (isLite) {
   log.info("[gme] stopping city hall");
   this.broadcast("cityhall_stop");
   this.stopListenningMessage();
-  this.stopListenningVote();
+  this.stopVoteListenners();
 };
 
-Game.prototype.stopListenningVote = function () {
+Game.prototype.stopVoteListenners = function () {
   _.forEach(this.players, _.bind(function (player) {
     player.getClient().socket.removeAllListeners("vote");
+    player.getClient().socket.removeAllListeners("cancel_vote");
+    player.getClient().socket.removeAllListeners("skip_vote");
   }, this));
+};
+
+Game.prototype.startListenningCancelVote = function () {
+  this.clearPlayerVote();
+  _.forEach(this.players, _.bind(function (player) {
+    player.getClient().socket.on("cancel_vote", _.bind(function (data) {
+      player.role.clearVote();
+      this.broadcast("vote_response", {
+        result: true,
+        voteList: this.getVoteList()
+      });
+    }, this));
+  }, this));
+};
+
+Game.prototype.startListenningSkipVote = function () {
+  this.clearPlayerVote();
+  _.forEach(this.players, _.bind(function (player) {
+    player.getClient().socket.on("skip_vote", _.bind(function (data) {
+    }));
+  }));
 };
 
 Game.prototype.startListenningVote = function () {
   this.clearPlayerVote();
   _.forEach(this.players, _.bind(function (player) {
     player.getClient().socket.on("vote", _.bind(function (data) {
-      var a = 'target';
       var target = null;
       if (data.target) {
         target = this.getPlayer(data.target);
       }
-      if (!target) {
+      if (!target || target.client.username === player.client.username) {
         player.emit('vote_response', {result: false});
       } else {
-        target.vote++;
+        player.role.voteTarget = target.client.username;
         this.broadcast("vote_response", {
           result: true,
-          voteList: _.map(this.players, function (player) {
-            return {
-              username: player.getClient().username,
-              vote: player.vote
-            };
-          })
+          voteList: this.getVoteList()
         });
       }
     }, this));
   }, this));
 };
 
+Game.prototype.getVoteList = function () {
+  var toRet = _(this.players).map(function (player) {
+    return {username: player.client.username, voteTarget: player.role.voteTarget};
+  })
+  .groupBy(function (player) {
+    return player.voteTarget;
+  }).forEach(function (group) {
+    _(group).forEach(function (player) {
+      delete player.voteTarget;
+    });
+  }).value();
+  return toRet;
+};
+
 Game.prototype.clearPlayerVote = function () {
   _(this.players).forEach(function (player) {
-    player.vote = 0;
+    player.role.clearVote();
   });
 };
 

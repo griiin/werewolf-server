@@ -16,4 +16,8 @@ ARole.prototype.Die = function () {
   this.isAlive = false;
 };
 
+ARole.prototype.clearVote = function () {
+  this.voteTarget = null;
+};
+
 module.exports = ARole;

@@ -1,5 +1,4 @@
 /*
-it should allow cancel vote
 it should denied vote against himself
 it should allow skip vote
 it should denied actions after its duration
@@ -69,8 +68,6 @@ describe("Game's city hall", function() {
     .done();
   }, this);
 
-  // should refuse bad vote
-  // should accept skip vote
   jh.it("should allow user vote", function (callback) {
     var cb = function (data) {
       var flag = false;
@@ -119,55 +116,52 @@ describe("Game's city hall", function() {
     .done();
   }, this);
 
-  //
-  // jh.it("should denied user vote", function (callback) {
-  //   game.prepareClassicGame({port : this.options.socketport})
-  //   .then(_.bind(function (data) {
-  //     var lastClient = data.client;
-  //     var Game = require('../../src/game/Game.js');
-  //     Game.delayFactor = 0.1;
-  //     var flag = false;
-  //     lastClient.on("cityhall_start", function (response) {
-  //       expect(response.isVoteEnabled).toBe(false);
-  //       lastClient.on("vote_response", function (response) {
-  //         if (response) {
-  //           flag = true;
-  //         }
-  //       });
-  //       lastClient.emit("vote");
-  //       lastClient.on("cityhall_stop", function (response) {
-  //         expect(flag).toBe(false);
-  //         callback();
-  //       });
-  //     });
-  //     return data;
-  //   }, this))
-  //   .then(game.launchClassicGame)
-  //   .done();
-  // }, this);
-  //
-  // jh.it("should denied conversation after its duration", function (callback) {
-  //   game.prepareClassicGame({port : this.options.socketport})
-  //   .then(_.bind(function (data) {
-  //     var lastClient = data.client;
-  //     var Game = require('../../src/game/Game.js');
-  //     Game.delayFactor = 0.1;
-  //     var flag = false;
-  //     lastClient.on("cityhall_stop", function (response) {
-  //       lastClient.on("msg", function (response) {
-  //         if (response) {
-  //           flag = true;
-  //         }
-  //       });
-  //       lastClient.emit("msg", "hello");
-  //       lastClient.on("end_game", function (response) {
-  //         expect(flag).toBe(false);
-  //         callback();
-  //       });
-  //     });
-  //     return data;
-  //   }, this))
-  //   .then(game.launchClassicGame)
-  //   .done();
-  // }, this);
+  jh.it("should refuse self-vote", function (callback) {
+    var cb = function (data) {
+      var flag = false;
+      data.client.on("vote_response", function (response) {
+        if (!response.result) {
+          flag = true;
+        }
+      });
+      data.client.emit("vote", {target: 'username4'});
+      data.client.on("cityhall_stop", function (response) {
+        expect(flag).toBe(true);
+        callback();
+      });
+    };
+    var data = {
+      port : this.options.socketport,
+      cityHallCB: cb
+    };
+    game.prepareClassicGame(data)
+    .then(game.goToSecondCityHallAndKillAllWerewolves)
+    .then(game.launchClassicGame)
+    .done();
+  }, this);
+
+  jh.it("should allow cancel vote", function (callback) {
+    var cb = function (data) {
+      var flag = false;
+      data.client.on("vote_response", function (response) {
+        if (response.result) {
+          flag = true;
+        }
+      });
+      data.client.emit("cancel_vote");
+      data.client.on("cityhall_stop", function (response) {
+        expect(flag).toBe(true);
+        callback();
+      });
+    };
+    var data = {
+      port : this.options.socketport,
+      cityHallCB: cb
+    };
+    game.prepareClassicGame(data)
+    .then(game.goToSecondCityHallAndKillAllWerewolves)
+    .then(game.launchClassicGame)
+    .done();
+  }, this);
+
 });
