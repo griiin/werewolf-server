@@ -4,7 +4,7 @@ log = require('../misc/log.js')();
 
 exports.joinGame = function (data, user, mongo, additionalData) {
   if (!verifyData(data)) {
-    log.info("[jng] user " + user.username + " failed joining");
+    log.info("[jng] user " + user.username + " failed joining, data are corrupted");
     user.socket.emit("join_game_response", { result: false });
     return;
   }

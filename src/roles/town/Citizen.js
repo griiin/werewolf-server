@@ -11,7 +11,7 @@ Citizen.prototype.specialPower = function () {
   log.error("Bazinga!");
 };
 
-Citizen.roleName = 'citizen';
+Citizen.prototype.roleName = 'citizen';
 
 _.extend(Citizen.prototype, ATown.prototype);
 

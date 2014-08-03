@@ -1,6 +1,6 @@
 var Server = require('./src/Server.js');
 var options = {
-  dbname: 'werewolf-dev-0001',
+  dbname: 'werewolf-dev-0002',
   dbhost: '127.0.0.1',
   dbport: 27017,
   socketport: 4242,

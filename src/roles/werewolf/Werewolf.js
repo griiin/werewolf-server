@@ -11,7 +11,7 @@ Werewolf.prototype.specialPower = function () {
   log.error("Grrouuu!");
 };
 
-Werewolf.roleName = 'werewolf';
+Werewolf.prototype.roleName = 'werewolf';
 
 _.extend(Werewolf.prototype, AWerewolf.prototype);
 

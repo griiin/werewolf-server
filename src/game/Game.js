@@ -2,7 +2,7 @@ var _ = require('lodash'),
 Q = require("Q"),
 log = require('../misc/log.js')(),
 Player = require('./Player.js'),
-roles = require('../roles/roles');
+RoleFactory = require('../roles/roles.js');
 
 var Game = function (id, creator, roles, language) {
   log.info ("[gme] " + creator.username + " create game n" + id);
@@ -23,8 +23,14 @@ Game.prototype.getInfo = function () {
   };
 };
 
+Game.prototype.containsClient = function (client) {
+  return _(this.players).any(function (player) {
+    return player.client.username == client.username;
+  });
+};
+
 Game.prototype.tryAddUser = function (user) {
-  if (this.players.length >= this.maxUser()) {
+  if (this.players.length >= this.maxUser() || this.containsClient(user)) {
     return false;
   }
   this.players.push(new Player(user));
@@ -76,9 +82,10 @@ Game.prototype.broadcast = function (cmd, data) {
 Game.prototype.tryRemoveUser = function (clientToRemove) {
   if (this.contains(clientToRemove)) {
     if (!this.started) {
-      _.remove(this.players, function (player) {
+      _.remove(this.players, _.bind(function (player) {
+        this.broadcast("player_left", {playerNb: this.players.length});
         return player.getClient() === clientToRemove;
-      });
+      }, this));
     } else {
       _(this.players).where(function (player) {
         return player.getClient() === clientToRemove;
@@ -138,12 +145,14 @@ it should launch tribunal summary
 Game.delayFactor = 1000;
 
 Game.prototype.start = function () {
-  log.info('[gme] launching game id' + this.id + " [players:]", _.map(this.players, function (player) { return player.getClient().username; }));
+  log.info('[gme] launching game id' + this.id + " [players:]",
+  _.map(this.players, function (player) {
+    return player.getClient().username;
+  }));
   this.started = true;
   Q.fcall(_.bind(this.definesRoles, this))
   .delay(10 * Game.delayFactor)
   .then(_.bind(this.launchCityHallLite, this))
-  .delay(60 * Game.delayFactor)
   .then(_.bind(this.stopCityHall, this))
   .then(_.bind(this.gameLoop, this))
   .done();
@@ -174,7 +183,6 @@ Game.prototype.gameLoop = function () {
     .then(_.bind(this.stopNight, this))
     .delay(10 * Game.delayFactor)
     .then(_.bind(this.launchCityHall, this))
-    .delay(60 * Game.delayFactor)
     .then(_.bind(this.stopCityHall, this))
     .then(_.bind(this.gameLoop, this))
     .done();
@@ -196,14 +204,21 @@ Game.prototype.launchCityHallLite = function () {
 };
 
 Game.prototype.launchCityHall = function (isVoteDisabled) {
+  var deferred = Q.defer();
+
   log.info("[gme] launching city hall");
   this.broadcast("cityhall_start", {isVoteDisabled: !!isVoteDisabled});
   this.startListenningMessage();
   if (!isVoteDisabled) {
     this.startListenningVote();
     this.startListenningCancelVote();
-    this.startListenningSkipVote();
   }
+
+  setTimeout(function () {
+    deferred.resolve();
+  }, 60 * Game.delayFactor);
+
+  return deferred.promise;
 };
 
 Game.prototype.stopCityHall = function (isLite) {
@@ -217,7 +232,6 @@ Game.prototype.stopVoteListenners = function () {
   _.forEach(this.players, _.bind(function (player) {
     player.getClient().socket.removeAllListeners("vote");
     player.getClient().socket.removeAllListeners("cancel_vote");
-    player.getClient().socket.removeAllListeners("skip_vote");
   }, this));
 };
 
@@ -232,14 +246,6 @@ Game.prototype.startListenningCancelVote = function () {
       });
     }, this));
   }, this));
-};
-
-Game.prototype.startListenningSkipVote = function () {
-  this.clearPlayerVote();
-  _.forEach(this.players, _.bind(function (player) {
-    player.getClient().socket.on("skip_vote", _.bind(function (data) {
-    }));
-  }));
 };
 
 Game.prototype.startListenningVote = function () {
@@ -335,7 +341,7 @@ Game.prototype.definesRoles = function () {
   var playersRole = [];
   _.forEach(this.roles, function (role) {
     for (var i = 0; i < role.nb; ++i) {
-      playersRole.push(roles.factory(role.roleName));
+      playersRole.push(RoleFactory.factory(role.roleName));
     }
   });
   playersRole = _.shuffle(playersRole);
@@ -344,7 +350,7 @@ Game.prototype.definesRoles = function () {
     player.role = playersRole[i++];
   });
   _.forEach(this.players, function (player) {
-    player.emit("your_role", {roleName: player.role.roleName});
+    player.emit("your_role", { roleName: player.role.roleName});
   });
 };
 
