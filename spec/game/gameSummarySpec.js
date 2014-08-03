@@ -19,7 +19,7 @@ describe("Game's summary system", function() {
       listeners: ['end_game']
     };
 
-    // all werewolf so the game will finish instantly
+    // kill all werewolf so the game will finish instantly
     var Werewolf = require('../../src/roles/werewolf/Werewolf.js');
     Werewolf.prototype.isAlive = false;
     client.connectNewClient(data)

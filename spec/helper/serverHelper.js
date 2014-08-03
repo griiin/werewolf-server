@@ -55,7 +55,7 @@ serverHelper.prototype.clearAll = _.bind(function () {
 }, serverHelper.prototype);
 
 serverHelper.prototype.clearProto = function () {
-    // all werewolf so the game will finish instantly
+    // kill all werewolf so the game will finish instantly
     var Werewolf = require('../../src/roles/werewolf/Werewolf.js');
     Werewolf.prototype.isAlive = true;
 };

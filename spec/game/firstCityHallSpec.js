@@ -11,7 +11,7 @@ describe("Game's first city hall", function() {
   beforeEach(function() {
     _.extend(this, serverHelper.getConfiguredServer({debug: false, verbose: false}));
 
-    // all werewolf so the game will finish instantly
+    // kill all werewolf so the game will finish instantly
     var Werewolf = require('../../src/roles/werewolf/Werewolf.js');
     Werewolf.prototype.isAlive = false;
   });

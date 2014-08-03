@@ -36,7 +36,7 @@ game.prototype.prepareClassicGame = function (options) {
 };
 
 game.prototype.launchClassicGame = function (data) {
-    var deferred = Q.defer();
+  var deferred = Q.defer();
 
   client.signUpNew(data)
   .then(lobby.joinGame)
@@ -46,6 +46,24 @@ game.prototype.launchClassicGame = function (data) {
   .done();
 
   return deferred.promise;
+};
+
+
+game.prototype.goToSecondCityHallAndKillAllWerewolves = function (data) {
+  var lastClient = data.client;
+  var Game = require('../../src/game/Game.js');
+  Game.delayFactor = 0.1;
+  var counter = 0;
+  lastClient.on("cityhall_start", function (response) {
+    counter++;
+    if (counter === 2) {
+      // kill all werewolf so the game will finish instantly
+      var Werewolf = require('../../src/roles/werewolf/Werewolf.js');
+      Werewolf.prototype.isAlive = false;
+      data.cityHallCB(data);
+    }
+  });
+  return data;
 };
 
 module.exports = new game();

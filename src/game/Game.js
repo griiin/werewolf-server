@@ -30,7 +30,12 @@ Game.prototype.tryAddUser = function (user) {
   this.players.push(new Player(user));
   this.broadcast("new_player", {playerNb: this.players.length});
   if (this.players.length >= this.maxUser()) {
-    this.broadcast("game_start", {playerNb: this.players.length});
+    this.broadcast("game_start", {
+      playerNb: this.players.length,
+      playerList: _(this.players).map(function (player) {
+        return player.getClient().username;
+      }).value()
+    });
     this.start();
   }
 
@@ -42,6 +47,7 @@ Game.prototype.removeClientBySocket = function (socket) {
     _.remove(this.players, function (player) {
       return player.getClient().socket === socket;
     });
+    this.broadcast("player_left", {playerNb: this.players.length});
   } else {
     _(this.players).where(function (player) {
       return player.getClient().socket === socket;
@@ -162,19 +168,19 @@ Game.prototype.start = function () {
 };
 
 Game.prototype.gameLoop = function () {
-    if (!this.hasReachedConclusion()) {
-      Q.fcall(_.bind(this.launchNight, this))
-      .delay(60 * Game.delayFactor)
-      .then(_.bind(this.stopNight, this))
-      .delay(10 * Game.delayFactor)
-      .then(_.bind(this.launchCityHall, this))
-      .delay(60 * Game.delayFactor)
-      .then(_.bind(this.stopCityHall, this))
-      .then(_.bind(this.gameLoop, this))
-      .done();
-    } else {
+  if (!this.hasReachedConclusion()) {
+    Q.fcall(_.bind(this.launchNight, this))
+    .delay(60 * Game.delayFactor)
+    .then(_.bind(this.stopNight, this))
+    .delay(10 * Game.delayFactor)
+    .then(_.bind(this.launchCityHall, this))
+    .delay(60 * Game.delayFactor)
+    .then(_.bind(this.stopCityHall, this))
+    .then(_.bind(this.gameLoop, this))
+    .done();
+  } else {
     this.launchGameSummary();
-    }
+  }
 };
 
 Game.prototype.launchNight = function () {
@@ -192,22 +198,72 @@ Game.prototype.launchCityHallLite = function () {
 Game.prototype.launchCityHall = function (isVoteDisabled) {
   log.info("[gme] launching city hall");
   this.broadcast("cityhall_start", {isVoteDisabled: !!isVoteDisabled});
-  this.startListenning();
+  this.startListenningMessage();
+  if (!isVoteDisabled) {
+    this.startListenningVote();
+  }
 };
 
 Game.prototype.stopCityHall = function (isLite) {
   log.info("[gme] stopping city hall");
   this.broadcast("cityhall_stop");
-  this.stopListenning();
+  this.stopListenningMessage();
+  this.stopListenningVote();
 };
 
-Game.prototype.stopListenning = function () {
+Game.prototype.stopListenningVote = function () {
+  _.forEach(this.players, _.bind(function (player) {
+    player.getClient().socket.removeAllListeners("vote");
+  }, this));
+};
+
+Game.prototype.startListenningVote = function () {
+  this.clearPlayerVote();
+  _.forEach(this.players, _.bind(function (player) {
+    player.getClient().socket.on("vote", _.bind(function (data) {
+      var a = 'target';
+      var target = null;
+      if (data.target) {
+        target = this.getPlayer(data.target);
+      }
+      if (!target) {
+        player.emit('vote_response', {result: false});
+      } else {
+        target.vote++;
+        this.broadcast("vote_response", {
+          result: true,
+          voteList: _.map(this.players, function (player) {
+            return {
+              username: player.getClient().username,
+              vote: player.vote
+            };
+          })
+        });
+      }
+    }, this));
+  }, this));
+};
+
+Game.prototype.clearPlayerVote = function () {
+  _(this.players).forEach(function (player) {
+    player.vote = 0;
+  });
+};
+
+Game.prototype.getPlayer = function (playerName) {
+  var result = _.where(this.players, function (player) {
+    return player.getClient().username === playerName;
+  });
+  return result.length === 1 ? result[0] : null;
+};
+
+Game.prototype.stopListenningMessage = function () {
   _.forEach(this.players, _.bind(function (player) {
     player.getClient().socket.removeAllListeners("msg");
   }, this));
 };
 
-Game.prototype.startListenning = function () {
+Game.prototype.startListenningMessage = function () {
   _.forEach(this.players, _.bind(function (player) {
     player.getClient().socket.on("msg", _.bind(function (msg) {
       this.broadcast("msg", { player: player.getClient().username , msg: msg});

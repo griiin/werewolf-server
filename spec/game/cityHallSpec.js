@@ -1,5 +1,4 @@
 /*
-it should allow user vote
 it should allow cancel vote
 it should denied vote against himself
 it should allow skip vote
@@ -25,7 +24,7 @@ describe("Game's city hall", function() {
 
   jh.it("should launch a city hall with vote enabled if nothing has happened at the last night", function (callback) {
     game.prepareClassicGame({port : this.options.socketport})
-    .then(_.bind(function (data) {
+    .then(function (data) {
       var lastClient = data.client;
       var Game = require('../../src/game/Game.js');
       Game.delayFactor = 0.1;
@@ -33,7 +32,7 @@ describe("Game's city hall", function() {
       lastClient.on("cityhall_start", function (response) {
         counter++;
         if (counter === 2) {
-          // all werewolf so the game will finish instantly
+          // kill all werewolf so the game will finish instantly
           var Werewolf = require('../../src/roles/werewolf/Werewolf.js');
           Werewolf.prototype.isAlive = false;
           expect(response.isVoteDisabled).toBe(false);
@@ -41,42 +40,61 @@ describe("Game's city hall", function() {
         }
       });
       return data;
-    }, this))
+    })
     .then(game.launchClassicGame)
     .done();
   }, this);
 
   jh.it("should allow user sending and receiving message", function (callback) {
-    game.prepareClassicGame({port : this.options.socketport})
-    .then(_.bind(function (data) {
-      var lastClient = data.client;
-      var Game = require('../../src/game/Game.js');
-      Game.delayFactor = 0.1;
-      var counter = 0;
+    var cb = function (data) {
       var flag = false;
-      lastClient.on("cityhall_start", function (response) {
-        counter++;
-        if (counter === 2) {
-          // all werewolf so the game will finish instantly
-          var Werewolf = require('../../src/roles/werewolf/Werewolf.js');
-          Werewolf.prototype.isAlive = false;
-          lastClient.on("msg", function (response) {
-            if (response) {
-              flag = true;
-            }
-          });
-          lastClient.emit("msg", "hello");
-          lastClient.on("cityhall_stop", function (response) {
-            expect(flag).toBe(true);
-            callback();
-          });
+      data.client.on("msg", function (response) {
+        if (response) {
+          flag = true;
         }
       });
-      return data;
-    }, this))
+      data.client.emit("msg", "hello");
+      data.client.on("cityhall_stop", function (response) {
+        expect(flag).toBe(true);
+        callback();
+      });
+    };
+    var data = {
+      port : this.options.socketport,
+      cityHallCB: cb
+    };
+    game.prepareClassicGame(data)
+    .then(game.goToSecondCityHallAndKillAllWerewolves)
     .then(game.launchClassicGame)
     .done();
   }, this);
+
+  // should refuse bad vote
+  // should accept skip vote
+  jh.it("should allow user vote", function (callback) {
+    var cb = function (data) {
+      var flag = false;
+      data.client.on("vote_response", function (response) {
+        if (response.result) {
+          flag = true;
+        }
+      });
+      data.client.emit("vote", {target: 'username0'});
+      data.client.on("cityhall_stop", function (response) {
+        expect(flag).toBe(true);
+        callback();
+      });
+    };
+    var data = {
+      port : this.options.socketport,
+      cityHallCB: cb
+    };
+    game.prepareClassicGame(data)
+    .then(game.goToSecondCityHallAndKillAllWerewolves)
+    .then(game.launchClassicGame)
+    .done();
+  }, this);
+
   //
   // jh.it("should denied user vote", function (callback) {
   //   game.prepareClassicGame({port : this.options.socketport})
