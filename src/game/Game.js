@@ -188,6 +188,9 @@ Game.prototype.gameLoop = function () {
     .done();
   } else {
     this.launchGameSummary();
+    if (this.endEvent) {
+      this.endEvent(this);
+    }
   }
 };
 
@@ -313,9 +316,13 @@ Game.prototype.startListenningMessage = function () {
 Game.prototype.launchGameSummary = function () {
   var victoriousTeam = this.getVictoriousTeam();
   _.forEach(this.players, function (player) {
-    var msg = player.role.team === victoriousTeam ? 'You\'ve won' : 'You\'ve loose';
-    player.emit("end_game", msg);
+    var victory = player.role.team === victoriousTeam;
+    player.emit("end_game", { victory: victory });
   });
+};
+
+Game.prototype.setEndEvent = function (func) {
+  this.endEvent = func;
 };
 
 Game.prototype.hasReachedConclusion = function () {

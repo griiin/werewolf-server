@@ -130,10 +130,19 @@ Server.prototype.onUserIdentification = function(user, respond) {
 
 Server.prototype.initLobbyListeners = function (user) {
   this.on(user, 'list_roles', require('./lobby/listRoles').listRoles);
-  this.on(user, 'create_game', require('./lobby/createGame').createGame, {games: this.games, callback: _.bind(this.onGame, this)});
+  this.on(user, 'create_game', require('./lobby/createGame').createGame, {
+    games: this.games,
+    callback: _.bind(this.onGame, this),
+    onGameEndCallback : _.bind(this.onGameEnd, this)});
   this.on(user, 'join_game', require('./lobby/joinGame').joinGame, {games: this.games, callback: _.bind(this.onGame, this)});
   this.on(user, 'leave_game', require('./lobby/leaveGame').leaveGame, this.games);
   this.on(user, 'list_games', require('./lobby/listGames').listGames, this.games);
+};
+
+Server.prototype.onGameEnd = function (game) {
+  _.remove(this.games, function (g) {
+    return g == game;
+  });
 };
 
 Server.prototype.initLobby = function (user) {

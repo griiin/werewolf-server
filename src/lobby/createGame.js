@@ -14,6 +14,7 @@ exports.createGame = function (data, user, mongo, additionalData) {
   seq.next()
   .then(function(seq) {
     var game = new Game(seq.value, user, data.roles, data.language);
+    game.setEndEvent(additionalData.onGameEndCallback);
     additionalData.games.push(game);
     user.socket.emit("create_game_response", { result: true, id: seq.value });
     additionalData.callback(user, game);
