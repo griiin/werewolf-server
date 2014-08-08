@@ -9,7 +9,7 @@ game = require("../helper/game.js");
 
 describe("Game's city hall vote system", function() {
   beforeEach(function() {
-    _.extend(this, serverHelper.getConfiguredServer({debug: true, verbose: false}));
+    _.extend(this, serverHelper.getConfiguredServer({debug: false, verbose: false}));
   });
 
   afterEach(serverHelper.clearAll);

@@ -217,9 +217,65 @@ Game.prototype.launchCityHall = function (isVoteDisabled) {
     this.startListenningCancelVote();
   }
 
-  setTimeout(function () {
-    deferred.resolve();
-  }, 60 * Game.delayFactor);
+  setTimeout(_.bind(function () {
+    if (this.isVoteConclusive()) {
+      this.launchTribunal()
+      // .then(this.launchLynchVote)
+      // .then(this.launchTribunalSummary)
+      // .then(this.launchCityHallLite)
+      .then(function () {
+        deferred.resolve();
+      })
+      .done();
+    } else {
+      deferred.resolve();
+    }
+  }, this), 60 * Game.delayFactor);
+
+  return deferred.promise;
+};
+
+Game.prototype.isVoteConclusive = function () {
+  var designatedPlayer = this.getAccusedPlayer();
+  log.debug(!!designatedPlayer);
+  return !!designatedPlayer;
+};
+
+Game.prototype.getAccusedPlayer = function () {
+  if (Object.keys(this.getVoteList()).length < 2) {
+    return null;
+  }
+  return _(this.getVoteList())
+  .where(function (accusedPlayer) {
+    return !!accusedPlayer[0].voteTarget;
+  })
+  .max(function (accusedPlayer) {
+    return accusedPlayer.length;
+  }).value();
+};
+
+Game.prototype.launchTribunal = function () {
+  var deferred = Q.defer();
+
+  log.debug("?");
+  this.broadcast("launch_tribunal", this.getAccusedPlayer());
+  deferred.resolve();
+
+  return deferred.promise;
+};
+
+Game.prototype.launchLynchVote = function () {
+  var deferred = Q.defer();
+
+  deferred.resolve();
+
+  return deferred.promise;
+};
+
+Game.prototype.launchTribunalSummary = function () {
+  var deferred = Q.defer();
+
+  deferred.resolve();
 
   return deferred.promise;
 };
@@ -273,14 +329,15 @@ Game.prototype.startListenningVote = function () {
 };
 
 Game.prototype.getVoteList = function () {
-  var toRet = _(this.players).map(function (player) {
+  var toRet = _(this.players)
+  .map(function (player) {
     return {username: player.client.username, voteTarget: player.role.voteTarget};
   })
   .groupBy(function (player) {
     return player.voteTarget;
   }).forEach(function (group) {
     _(group).forEach(function (player) {
-      delete player.voteTarget;
+      // delete player.voteTarget;
     });
   }).value();
   return toRet;
