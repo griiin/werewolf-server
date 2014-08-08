@@ -126,13 +126,6 @@ it should denied werewolf conversation after its duration
 it should stop game if night is conclusive
 it should launch night summary
 
-it should start tribunal if vote are conclusive
-tribunal
-it should allow accused player to send message
-it should allow non-accused players to send message
-it should allow non-accused players to received message
-it should denied accused player receiving non-accused players messages
-it should denied actions after its duration
 
 it should launch lynch vote
 lynch vote
@@ -237,7 +230,6 @@ Game.prototype.launchCityHall = function (isVoteDisabled) {
 
 Game.prototype.isVoteConclusive = function () {
   var designatedPlayer = this.getAccusedPlayer();
-  log.debug(!!designatedPlayer);
   return !!designatedPlayer;
 };
 
@@ -257,7 +249,6 @@ Game.prototype.getAccusedPlayer = function () {
 Game.prototype.launchTribunal = function () {
   var deferred = Q.defer();
 
-  log.debug("?");
   this.broadcast("launch_tribunal", this.getAccusedPlayer());
   deferred.resolve();
 

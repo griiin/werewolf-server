@@ -1,3 +1,12 @@
+/*
+it should start tribunal if vote are conclusive
+tribunal
+it should allow accused player to send message
+it should allow non-accused players to send message
+it should allow non-accused players to received message
+it should denied accused player receiving non-accused players messages
+it should denied actions after its duration
+*/
 var Q = require("Q"),
 _ = require("lodash"),
 log = require("../../src/misc/log.js")(),
