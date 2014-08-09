@@ -277,7 +277,7 @@ Game.prototype.listenNonAccusedPlayer = function () {
   var nonAccusedPlayers = _.where(this.players, function (player) {
     return player.getClient().username !== accusedPlayerName;
   });
-  _.forEach(this.nonAccusedPlayers, _.bind(function (player) {
+  _.forEach(nonAccusedPlayers, _.bind(function (player) {
     player.client.socket.on("msg", _.bind(function (msg) {
       this.broadcastTo(nonAccusedPlayers, "msg", msg);
     }, this));

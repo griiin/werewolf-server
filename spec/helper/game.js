@@ -52,7 +52,7 @@ game.prototype.launchClassicGame = function (data) {
 game.prototype.goToSecondCityHallAndKillAllWerewolves = function (data) {
   var lastClient = data.client;
   var Game = require('../../src/game/Game.js');
-  Game.delayFactor = 1;
+  Game.delayFactor = 0.5;
   var counter = 0;
   lastClient.on("cityhall_start", function (response) {
     counter++;

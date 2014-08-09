@@ -68,4 +68,54 @@ describe("Game's city hall tribunal", function() {
     .then(game.launchClassicGame)
     .done();
   }, this);
+
+  jh.it("should allow non-accused player to broadcast message", function (callback) {
+    var cb = function (data) {
+      var flag = false;
+      data.clients[0].on("launch_tribunal", function (response) {
+        data.clients[0].on("msg", function (msg) {
+          flag = true;
+        });
+        data.clients[0].emit("msg", 'hello');
+      });
+      data.clients[0].emit("vote", {target: 'username4'});
+      data.client.on("cityhall_stop", function (response) {
+        expect(flag).toBe(true);
+        callback();
+      });
+    };
+    var data = {
+      port : this.options.socketport,
+      cityHallCB: cb
+    };
+    game.prepareClassicGame(data)
+    .then(game.goToSecondCityHallAndKillAllWerewolves)
+    .then(game.launchClassicGame)
+    .done();
+  }, this);
+
+  jh.it("should denied accused player to receive non-accused message", function (callback) {
+    var cb = function (data) {
+      var flag = false;
+      data.client.on("launch_tribunal", function (response) {
+        data.client.on("msg", function (msg) {
+          flag = true;
+        });
+        data.clients[0].emit("msg", 'hello');
+      });
+      data.clients[0].emit("vote", {target: 'username4'});
+      data.client.on("cityhall_stop", function (response) {
+        expect(flag).toBe(false);
+        callback();
+      });
+    };
+    var data = {
+      port : this.options.socketport,
+      cityHallCB: cb
+    };
+    game.prepareClassicGame(data)
+    .then(game.goToSecondCityHallAndKillAllWerewolves)
+    .then(game.launchClassicGame)
+    .done();
+  }, this);
 });
