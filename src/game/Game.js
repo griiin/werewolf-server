@@ -215,11 +215,13 @@ Game.prototype.launchCityHall = function (isVoteDisabled) {
     if (this.isVoteConclusive()) {
       this.endCityHall();
       this.launchTribunal()
-      // .then(this.launchLynchVote)
       .delay(30 * Game.delayFactor)
-      // .then(this.launchTribunalSummary)
       .then(_.bind(this.stopTribunal, this))
-      // .then(this.launchCityHallLite)
+      .then(_.bind(this.launchLynchVote, this))
+      .delay(30 * Game.delayFactor)
+      .then(_.bind(this.stopLynchVote, this))
+      .then(_.bind(this.launchTribunalSummary, this))
+      // .then(_.bind(this.launchCityHallLite)
       .then(function () {
         deferred.resolve();
       })
@@ -288,10 +290,6 @@ Game.prototype.listenNonAccusedPlayer = function () {
     player.client.socket.on("msg", _.bind(function (msg) {
       this.broadcastTo(nonAccusedPlayers, "msg", msg);
     }, this));
-    player.client.socket.on("vote", _.bind(function (data) {
-      player.role.lynchVote = data.isGuilty;
-      player.client.socket.emit("vote_response", {result: true});
-    }, this));
   }, this));
 };
 
@@ -300,7 +298,6 @@ Game.prototype.stopTribunal = function () {
 
   _.forEach(this.players, _.bind(function (player) {
     player.getClient().socket.removeAllListeners("msg");
-    player.getClient().socket.removeAllListeners("vote");
   }));
   deferred.resolve();
 
@@ -310,6 +307,50 @@ Game.prototype.stopTribunal = function () {
 Game.prototype.launchLynchVote = function () {
   var deferred = Q.defer();
 
+  this.broadcast("lynch_start");
+  var accusedPlayerName = this.getAccusedPlayer()[0].voteTarget;
+  var nonAccusedPlayers = _.where(this.players, function (player) {
+    return player.getClient().username !== accusedPlayerName;
+  });
+  _.forEach(nonAccusedPlayers, _.bind(function (player) {
+    player.client.socket.on("vote", _.bind(function (data) {
+      player.role.lynchVote = data.isGuilty;
+      player.client.socket.emit("vote_response", {result: true});
+    }, this));
+  }, this));
+
+  deferred.resolve();
+
+  return deferred.promise;
+};
+
+Game.prototype.AccusedPlayerIsJugedGuilty = function () {
+  var accusedPlayerName = this.getAccusedPlayer()[0].voteTarget;
+  var nonAccusedPlayers = _.where(this.players, function (player) {
+    return player.getClient().username !== accusedPlayerName;
+  });
+  var guilty = _.where(nonAccusedPlayers, _.bind(function (player) {
+    return player.role.lynchVote;
+  }));
+  var innocent = _.where(nonAccusedPlayers, _.bind(function (player) {
+    return player.role.lynchVote === false;
+  }));
+  return guilty.length > innocent.length;
+};
+
+Game.prototype.lynchTheAccused = function () {
+  var accusedPlayerName = this.getAccusedPlayer()[0].voteTarget;
+  _.forEach(this.players, function (player) {
+    player.role.Die();
+  });
+};
+
+Game.prototype.stopLynchVote = function () {
+  var deferred = Q.defer();
+
+  _.forEach(this.players, _.bind(function (player) {
+    player.getClient().socket.removeAllListeners("vote");
+  }));
   deferred.resolve();
 
   return deferred.promise;
@@ -318,6 +359,11 @@ Game.prototype.launchLynchVote = function () {
 Game.prototype.launchTribunalSummary = function () {
   var deferred = Q.defer();
 
+  var isJugedGuilty = this.AccusedPlayerIsJugedGuilty();
+  if (isJugedGuilty) {
+    this.lynchTheAccused();
+  }
+  this.broadcast("tribunal_summary", { isJugedGuilty: isJugedGuilty });
   deferred.resolve();
 
   return deferred.promise;

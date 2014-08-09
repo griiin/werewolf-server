@@ -6,7 +6,7 @@ jh = require("../helper/jasmineHelper.js")(),
 client = require("../helper/client.js"),
 lobby = require("../helper/lobby.js");
 
-xdescribe("Server's leave game system", function() {
+describe("Server's leave game system", function() {
 
   beforeEach(function() {
     _.extend(this, serverHelper.getConfiguredServer());
