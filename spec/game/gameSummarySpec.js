@@ -6,7 +6,7 @@ jh = require("../helper/jasmineHelper.js")(),
 client = require("../helper/client.js"),
 lobby = require("../helper/lobby.js");
 
-describe("Game's summary system", function() {
+xdescribe("Game's summary system", function() {
   beforeEach(function() {
     _.extend(this, serverHelper.getConfiguredServer({debug: false, verbose: false}));
   });

@@ -253,12 +253,19 @@ Game.prototype.getAccusedPlayer = function () {
 Game.prototype.launchTribunal = function () {
   var deferred = Q.defer();
 
+  this.cleanPlayersForTribunal();
   this.broadcast("launch_tribunal", this.getAccusedPlayer());
   this.listenAccusedPlayer();
   this.listenNonAccusedPlayer();
   deferred.resolve();
 
   return deferred.promise;
+};
+
+Game.prototype.cleanPlayersForTribunal = function () {
+  _(this.players).forEach(function (player) {
+    player.role.isGuilty = null;
+  });
 };
 
 Game.prototype.listenAccusedPlayer = function () {
@@ -281,6 +288,10 @@ Game.prototype.listenNonAccusedPlayer = function () {
     player.client.socket.on("msg", _.bind(function (msg) {
       this.broadcastTo(nonAccusedPlayers, "msg", msg);
     }, this));
+    player.client.socket.on("vote", _.bind(function (data) {
+      player.role.lynchVote = data.isGuilty;
+      player.client.socket.emit("vote_response", {result: true});
+    }, this));
   }, this));
 };
 
@@ -289,6 +300,7 @@ Game.prototype.stopTribunal = function () {
 
   _.forEach(this.players, _.bind(function (player) {
     player.getClient().socket.removeAllListeners("msg");
+    player.getClient().socket.removeAllListeners("vote");
   }));
   deferred.resolve();
 
