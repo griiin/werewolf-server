@@ -79,6 +79,12 @@ Game.prototype.broadcast = function (cmd, data) {
   });
 };
 
+Game.prototype.broadcastTo = function (targets, cmd, data) {
+  _.forEach(targets, function (player) {
+    player.emit(cmd, data);
+  });
+};
+
 Game.prototype.tryRemoveUser = function (clientToRemove) {
   if (this.contains(clientToRemove)) {
     if (!this.started) {
@@ -149,26 +155,21 @@ Game.prototype.start = function () {
   .then(_.bind(this.stopCityHall, this))
   .then(_.bind(this.gameLoop, this))
   .done();
-
-
-  // this.definesRoles({duration: 10})
-  // // // this.launchCityHall({duration: 50, skipVote: true});
-  // while (!this.hasReachedConclusion()) {
-  //   // // // var nightEvents = this.launchNight({duration: 45});
-  //   // // // if (this.hasReachedConclusion()) {
-  //   // // //   break;
-  //   // // // }
-  //   // // // this.launchNightSummary({duration: 5, nightEvents: nightEvents});
-  //   // // // // var voteResult = this.launchCityHall({duration: 50});
-  //   // // // // // if (this.hasConclusiveVote(voteResult)) {
-  //   // // // // //   this.launchTribunal({duration: 20});
-  //   // // // // // //   var lynched = this.launchLynchVote({duration: 10});
-  //   // // // // // //   this.launchTribunalSummary({duration: 5, lynched: lynched});
-  //   // // // // // }
-  // }
-  // // this.launchGameSummary();
 };
 
+// while (!this.hasReachedConclusion()) {
+//   // // // var nightEvents = this.launchNight({duration: 45});
+//   // // // if (this.hasReachedConclusion()) {
+//   // // //   break;
+//   // // // }
+//   // // // this.launchNightSummary({duration: 5, nightEvents: nightEvents});
+//   // // // // var voteResult = this.launchCityHall({duration: 50});
+//   // // // // // if (this.hasConclusiveVote(voteResult)) {
+//   // // // // //   this.launchTribunal({duration: 20});
+//   // // // // // //   var lynched = this.launchLynchVote({duration: 10});
+//   // // // // // //   this.launchTribunalSummary({duration: 5, lynched: lynched});
+//   // // // // // }
+// }
 Game.prototype.gameLoop = function () {
   if (!this.hasReachedConclusion()) {
     Q.fcall(_.bind(this.launchNight, this))
@@ -212,9 +213,12 @@ Game.prototype.launchCityHall = function (isVoteDisabled) {
 
   setTimeout(_.bind(function () {
     if (this.isVoteConclusive()) {
+      this.endCityHall();
       this.launchTribunal()
       // .then(this.launchLynchVote)
+      .delay(30 * Game.delayFactor)
       // .then(this.launchTribunalSummary)
+      .then(_.bind(this.stopTribunal, this))
       // .then(this.launchCityHallLite)
       .then(function () {
         deferred.resolve();
@@ -250,6 +254,42 @@ Game.prototype.launchTribunal = function () {
   var deferred = Q.defer();
 
   this.broadcast("launch_tribunal", this.getAccusedPlayer());
+  this.listenAccusedPlayer();
+  this.listenNonAccusedPlayer();
+  deferred.resolve();
+
+  return deferred.promise;
+};
+
+Game.prototype.listenAccusedPlayer = function () {
+  var accusedPlayerName = this.getAccusedPlayer()[0].voteTarget;
+  _.forEach(this.players, _.bind(function (player) {
+    if (player.getClient().username === accusedPlayerName) {
+      player.client.socket.on("msg", _.bind(function (msg) {
+        this.broadcast("msg", msg);
+      }, this));
+    }
+  }, this));
+};
+
+Game.prototype.listenNonAccusedPlayer = function () {
+  var accusedPlayerName = this.getAccusedPlayer()[0].voteTarget;
+  var nonAccusedPlayers = _.where(this.players, function (player) {
+    return player.getClient().username !== accusedPlayerName;
+  });
+  _.forEach(this.nonAccusedPlayers, _.bind(function (player) {
+    player.client.socket.on("msg", _.bind(function (msg) {
+      this.broadcastTo(nonAccusedPlayers, "msg", msg);
+    }, this));
+  }, this));
+};
+
+Game.prototype.stopTribunal = function () {
+  var deferred = Q.defer();
+
+  _.forEach(this.players, _.bind(function (player) {
+    player.getClient().socket.removeAllListeners("msg");
+  }));
   deferred.resolve();
 
   return deferred.promise;
@@ -271,11 +311,15 @@ Game.prototype.launchTribunalSummary = function () {
   return deferred.promise;
 };
 
-Game.prototype.stopCityHall = function (isLite) {
-  log.info("[gme] stopping city hall");
-  this.broadcast("cityhall_stop");
+Game.prototype.endCityHall = function () {
   this.stopListenningMessage();
   this.stopVoteListenners();
+};
+
+Game.prototype.stopCityHall = function (isLite) {
+  this.endCityHall();
+  log.info("[gme] stopping city hall");
+  this.broadcast("cityhall_stop");
 };
 
 Game.prototype.stopVoteListenners = function () {
