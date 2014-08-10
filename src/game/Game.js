@@ -120,26 +120,6 @@ Game.prototype.contains = function (client) {
     }
   });
 };
-/*
-it should launchNight
-launch night
-it should allow werewolf sending a message
-it should allow werewolf receiving a message
-it should allow werewolf voting to kill someone
-it should denied werewolf voting after its duration
-it should denied non-werewolf to do werewolf actions
-it should denied werewolf conversation after its duration
-it should stop game if night is conclusive
-it should launch night summary
-
-
-it should launch lynch vote
-lynch vote
-it should allow player voting
-it should denied actions after its duration
-it should launch tribunal summary
-
-*/
 
 Game.delayFactor = 1000;
 
@@ -190,10 +170,12 @@ Game.prototype.gameLoop = function () {
 
 Game.prototype.launchNight = function () {
   log.info("[gme] launching night");
+  this.broadcast("night_start");
 };
 
 Game.prototype.stopNight = function () {
   log.info("[gme] stopping night");
+  this.broadcast("night_stop");
 };
 
 Game.prototype.launchCityHallLite = function () {
@@ -221,7 +203,7 @@ Game.prototype.launchCityHall = function (isVoteDisabled) {
       .delay(30 * Game.delayFactor)
       .then(_.bind(this.stopLynchVote, this))
       .then(_.bind(this.launchTribunalSummary, this))
-      // .then(_.bind(this.launchCityHallLite)
+      // .then(_.bind(this.launchCityHallLite, this))
       .then(function () {
         deferred.resolve();
       })

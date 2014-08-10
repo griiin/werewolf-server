@@ -48,11 +48,23 @@ game.prototype.launchClassicGame = function (data) {
   return deferred.promise;
 };
 
+game.prototype.goToFirstNightAndKillAllWerewolves = function (data) {
+  var lastClient = data.client;
+  var Game = require('../../src/game/Game.js');
+  Game.delayFactor = 0.4;
+  lastClient.on("night_start", function (response) {
+    data.cityHallCB(data);
+    // kill all werewolf so the game will finish instantly
+    var Werewolf = require('../../src/roles/werewolf/Werewolf.js');
+    Werewolf.prototype.isAlive = false;
+  });
+  return data;
+};
 
 game.prototype.goToSecondCityHallAndKillAllWerewolves = function (data) {
   var lastClient = data.client;
   var Game = require('../../src/game/Game.js');
-  Game.delayFactor = 0.5;
+  Game.delayFactor = 0.4;
   var counter = 0;
   lastClient.on("cityhall_start", function (response) {
     counter++;

@@ -7,7 +7,7 @@ client = require("../helper/client.js"),
 lobby = require("../helper/lobby.js"),
 game = require("../helper/game.js");
 
-describe("Game's city hall lynch system", function() {
+xdescribe("Game's city hall lynch system", function() {
   beforeEach(function() {
     _.extend(this, serverHelper.getConfiguredServer({debug: true, verbose: false}));
   });

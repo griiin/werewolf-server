@@ -5,7 +5,7 @@ serverHelper = require("../helper/serverHelper.js")(),
 jh = require("../helper/jasmineHelper.js")(),
 client = require("../helper/client.js");
 
-describe("Server's Sign Up system", function() {
+xdescribe("Server's Sign Up system", function() {
 
   beforeEach(function() {
     _.extend(this, serverHelper.getConfiguredServer());
