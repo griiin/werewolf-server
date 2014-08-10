@@ -135,7 +135,33 @@ describe("Game's night", function() {
       werewolves[0].on("vote_response", function (response) {
         flag = response.result;
       });
-      werewolves[0].emit("vote", {target:citizens[0].signUpInfo.username});
+      werewolves[0].emit("vote", {target: citizens[0].signUpInfo.username});
+      data.client.on("night_stop", function () {
+        expect(flag).toBe(true);
+        callback();
+      });
+    };
+    var data = {
+      port : this.options.socketport,
+      cityHallCB: cb
+    };
+    game.prepareClassicGame(data)
+    .then(game.goToFirstNightAndKillAllWerewolves)
+    .then(game.launchClassicGame)
+    .done();
+  }, this);
+
+  jh.it("should refuse werewolf to vote against themselves", function (callback) {
+    var cb = function (data) {
+      var flag = false;
+      var werewolves = _.where(data.clients, function (c) {
+        return c.roleName === 'werewolf';
+      });
+      werewolves[0].on("vote_response", function (response) {
+        flag = true;
+        expect(response.result).toBe(false);
+      });
+      werewolves[0].emit("vote", {target: werewolves[0].signUpInfo.username});
       data.client.on("night_stop", function () {
         expect(flag).toBe(true);
         callback();

@@ -188,7 +188,10 @@ Game.prototype.launchNight = function () {
 };
 
 Game.prototype.handleWerewolfVote = function (werewolf, data) {
-  werewolf.client.socket.emit("vote_response", {result: true});
+  var isAllowed = _.any(this.players, function (player) {
+    return player.client.username === data.target && player.role.roleName !== 'werewolf';
+  });
+  werewolf.client.socket.emit("vote_response", {result: isAllowed});
 };
 
 Game.prototype.stopNight = function () {
