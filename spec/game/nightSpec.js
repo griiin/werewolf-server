@@ -94,4 +94,32 @@ describe("Game's night", function() {
     .then(game.launchClassicGame)
     .done();
   }, this);
+
+  jh.it("should refuse citizen to get werewolves messages", function (callback) {
+    var cb = function (data) {
+      var flag = false;
+      var werewolves = _.where(data.clients, function (c) {
+        return c.roleName === 'werewolf';
+      });
+      var citizens = _.where(data.clients, function (c) {
+        return c.roleName === 'citizen';
+      });
+      citizens[0].on("msg", function () {
+        flag = true;
+      });
+      werewolves[0].emit("msg", "hello");
+      data.client.on("night_stop", function () {
+        expect(flag).toBe(false);
+        callback();
+      });
+    };
+    var data = {
+      port : this.options.socketport,
+      cityHallCB: cb
+    };
+    game.prepareClassicGame(data)
+    .then(game.goToFirstNightAndKillAllWerewolves)
+    .then(game.launchClassicGame)
+    .done();
+  }, this);
 });
