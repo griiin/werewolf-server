@@ -27,7 +27,7 @@ describe("Game's night", function() {
 
   afterEach(serverHelper.clearAll);
 
-  jh.it("should launch night", function (callback) {
+  jh.xit("should launch night", function (callback) {
     var cb = function (data) {
       var flag = true;
       data.client.on("night_stop", function () {
@@ -45,17 +45,18 @@ describe("Game's night", function() {
     .done();
   }, this);
 
-  jh.xit("should refuse citizen to talk", function (callback) {
+  jh.it("should refuse citizen to talk", function (callback) {
     var cb = function (data) {
       var flag = false;
-      data.client.on("vote_response", function (response) {
-        if (response.result) {
-          flag = true;
-        }
+      var citizens = _.where(data.clients, function (c) {
+        return c.roleName === 'citizen';
       });
-      data.client.emit("vote", {target: 'username0'});
-      data.client.on("cityhall_stop", function (response) {
-        expect(flag).toBe(true);
+      citizens[0].on("msg", function () {
+        flag = true;
+      });
+      citizens[0].on("msg", "hello");
+      data.client.on("night_stop", function () {
+        expect(flag).toBe(false);
         callback();
       });
     };
@@ -64,7 +65,7 @@ describe("Game's night", function() {
       cityHallCB: cb
     };
     game.prepareClassicGame(data)
-    .then(game.goToSecondCityHallAndKillAllWerewolves)
+    .then(game.goToFirstNightAndKillAllWerewolves)
     .then(game.launchClassicGame)
     .done();
   }, this);

@@ -19,7 +19,11 @@ client.prototype.connectNewClient = function (data) {
   if (!data.clients) {
     data.clients = [];
   }
-  data.clients.push(data.client);
+  var c = data.client;
+  c.on("your_role", function (response) {
+      c.roleName = response.roleName;
+  });
+  data.clients.push(c);
 
   data.client.on('connect', function() {
     deferred.resolve(data);

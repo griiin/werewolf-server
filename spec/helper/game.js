@@ -51,7 +51,7 @@ game.prototype.launchClassicGame = function (data) {
 game.prototype.goToFirstNightAndKillAllWerewolves = function (data) {
   var lastClient = data.client;
   var Game = require('../../src/game/Game.js');
-  Game.delayFactor = 0.4;
+  Game.delayFactor = 1;
   lastClient.on("night_start", function (response) {
     data.cityHallCB(data);
     // kill all werewolf so the game will finish instantly
