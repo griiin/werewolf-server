@@ -180,14 +180,22 @@ Game.prototype.launchNight = function () {
     werewolf.client.socket.on("msg", _.bind(function (msg) {
       this.broadcastTo(this.getWerewolves(), "msg", msg);
     }, this));
+    werewolf.client.socket.on("vote", _.bind(function (data) {
+      this.handleWerewolfVote(werewolf, data);
+    }, this));
   }, this));
   this.broadcast("night_start");
+};
+
+Game.prototype.handleWerewolfVote = function (werewolf, data) {
+  werewolf.client.socket.emit("vote_response", {result: true});
 };
 
 Game.prototype.stopNight = function () {
   log.info("[gme] stopping night");
   _(this.getWerewolves()).forEach(_.bind(function (werewolf) {
     werewolf.client.socket.removeAllListeners("msg");
+    werewolf.client.socket.removeAllListeners("vote");
   }, this));
   this.broadcast("night_stop");
 };

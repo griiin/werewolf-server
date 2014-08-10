@@ -61,6 +61,7 @@ client.prototype.signUp = _.bind(function (data) {
     data.signUpResponseData = signUpResponseData;
     deferred.resolve(data);
   });
+  data.client.signUpInfo = _.clone(data.signUpInfo);
   data.client.emit('sign_up', data.signUpInfo);
 
   return deferred.promise;
