@@ -168,13 +168,27 @@ Game.prototype.gameLoop = function () {
   }
 };
 
+Game.prototype.getWerewolves = function () {
+  return _.where(this.players, function (player) {
+    return player.role.roleName === 'werewolf';
+  });
+};
+
 Game.prototype.launchNight = function () {
   log.info("[gme] launching night");
+  _(this.getWerewolves()).forEach(_.bind(function (werewolf) {
+    werewolf.client.socket.on("msg", _.bind(function (msg) {
+      this.broadcastTo(this.getWerewolves(), "msg", msg);
+    }, this));
+  }, this));
   this.broadcast("night_start");
 };
 
 Game.prototype.stopNight = function () {
   log.info("[gme] stopping night");
+  _(this.getWerewolves()).forEach(_.bind(function (werewolf) {
+    werewolf.client.socket.removeAllListeners("msg");
+  }, this));
   this.broadcast("night_stop");
 };
 

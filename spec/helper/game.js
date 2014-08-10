@@ -54,9 +54,15 @@ game.prototype.goToFirstNightAndKillAllWerewolves = function (data) {
   Game.delayFactor = 1;
   lastClient.on("night_start", function (response) {
     data.cityHallCB(data);
-    // kill all werewolf so the game will finish instantly
-    var Werewolf = require('../../src/roles/werewolf/Werewolf.js');
-    Werewolf.prototype.isAlive = false;
+  });
+  var counter = 0;
+  lastClient.on("cityhall_start", function (response) {
+    counter++;
+    if (counter === 2) {
+      // kill all werewolf so the game will finish instantly
+      var Werewolf = require('../../src/roles/werewolf/Werewolf.js');
+      Werewolf.prototype.isAlive = false;
+    }
   });
   return data;
 };
