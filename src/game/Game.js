@@ -137,19 +137,6 @@ Game.prototype.start = function () {
   .done();
 };
 
-// while (!this.hasReachedConclusion()) {
-//   // // // var nightEvents = this.launchNight({duration: 45});
-//   // // // if (this.hasReachedConclusion()) {
-//   // // //   break;
-//   // // // }
-//   // // // this.launchNightSummary({duration: 5, nightEvents: nightEvents});
-//   // // // // var voteResult = this.launchCityHall({duration: 50});
-//   // // // // // if (this.hasConclusiveVote(voteResult)) {
-//   // // // // //   this.launchTribunal({duration: 20});
-//   // // // // // //   var lynched = this.launchLynchVote({duration: 10});
-//   // // // // // //   this.launchTribunalSummary({duration: 5, lynched: lynched});
-//   // // // // // }
-// }
 Game.prototype.gameLoop = function () {
   if (!this.hasReachedConclusion()) {
     Q.fcall(_.bind(this.launchNight, this))
