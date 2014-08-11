@@ -6,7 +6,7 @@ jh = require("../helper/jasmineHelper.js")(),
 client = require("../helper/client.js"),
 lobby = require("../helper/lobby.js");
 
-xdescribe("Server's list roles system", function() {
+describe("Server's list roles system", function() {
 
   beforeEach(function() {
     _.extend(this, serverHelper.getConfiguredServer());

@@ -5,7 +5,7 @@ serverHelper = require("../helper/serverHelper.js")(),
 jh = require("../helper/jasmineHelper.js")(),
 client = require("../helper/client.js");
 
-xdescribe("Server's lobby system", function() {
+describe("Server's lobby system", function() {
   beforeEach(function() {
     _.extend(this, serverHelper.getConfiguredServer({spyOn: 'onUserIdentification'}));
   });

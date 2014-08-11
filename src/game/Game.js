@@ -191,16 +191,53 @@ Game.prototype.handleWerewolfVote = function (werewolf, data) {
   var isAllowed = _.any(this.players, function (player) {
     return player.client.username === data.target && player.role.roleName !== 'werewolf';
   });
+  werewolf.role.killTarget = data.target;
   werewolf.client.socket.emit("vote_response", {result: isAllowed});
+};
+
+Game.prototype.findWerewolfTarget = function () {
+  var targets = _(this.getWerewolves()).map(function (werewolf) {
+    return { werewolf: werewolf, target: werewolf.role.killTarget };
+  }).groupBy(function (werewolf) {
+    return werewolf.target;
+  }).map(function (target) {
+    return { username: target[0].target, count: target.length };
+  }).value();
+  var maxTarget = _.max(targets, function (target) {
+    return target.count;
+  });
+  var isOtherTargetWithMaxVote = _.any(targets, function (target) {
+    return target.count === maxTarget.count &&
+    target.username !== maxTarget.username;
+  });
+  if (isOtherTargetWithMaxVote) {
+    return null;
+  } else {
+    return maxTarget.username;
+  }
+};
+
+Game.prototype.killTargets = function (targets) {
+  _.forEach(this.players, function (player) {
+    if (_.contains(targets, player.client.username)) {
+      player.role.Die();
+    }
+  });
 };
 
 Game.prototype.stopNight = function () {
   log.info("[gme] stopping night");
+  var werewolfTarget = this.findWerewolfTarget();
   _(this.getWerewolves()).forEach(_.bind(function (werewolf) {
     werewolf.client.socket.removeAllListeners("msg");
     werewolf.client.socket.removeAllListeners("vote");
   }, this));
-  this.broadcast("night_stop");
+  var killed = [];
+  if (werewolfTarget) {
+    killed.push(werewolfTarget);
+  }
+  this.killTargets(killed);
+  this.broadcast("night_stop", {killed: killed});
 };
 
 Game.prototype.launchCityHallLite = function () {

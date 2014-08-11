@@ -27,7 +27,7 @@ describe("Game's night", function() {
 
   afterEach(serverHelper.clearAll);
 
-  jh.xit("should launch night", function (callback) {
+  jh.it("should launch night", function (callback) {
     var cb = function (data) {
       var flag = true;
       data.client.on("night_stop", function () {
@@ -164,6 +164,37 @@ describe("Game's night", function() {
       werewolves[0].emit("vote", {target: werewolves[0].signUpInfo.username});
       data.client.on("night_stop", function () {
         expect(flag).toBe(true);
+        callback();
+      });
+    };
+    var data = {
+      port : this.options.socketport,
+      cityHallCB: cb
+    };
+    game.prepareClassicGame(data)
+    .then(game.goToFirstNightAndKillAllWerewolves)
+    .then(game.launchClassicGame)
+    .done();
+  }, this);
+
+  jh.it("should kill werewolves' target", function (callback) {
+    var cb = function (data) {
+      var flag = false;
+      var werewolves = _.where(data.clients, function (c) {
+        return c.roleName === 'werewolf';
+      });
+      var citizens = _.where(data.clients, function (c) {
+        return c.roleName === 'citizen';
+      });
+      var target = citizens[0].signUpInfo.username;
+      werewolves[0].on("vote_response", function (response) {
+        flag = response.result;
+      });
+      werewolves[0].emit("vote", {target: target});
+      data.client.on("night_stop", function (summary) {
+        expect(flag).toBe(true);
+        expect(summary.killed.length).toBe(1);
+        expect(summary.killed[0]).toBe(target);
         callback();
       });
     };
