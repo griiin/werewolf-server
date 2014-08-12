@@ -108,6 +108,7 @@ Server.prototype.onClientConnection = function (socket) {
 
 Server.prototype.onClientDisconnection = function (socket) {
   socket.on('disconnect', _.bind(function () {
+    log.info("[usr] '" + this.getClientInfo(socket) + "' has been deconnected");
     _.forEach(this.games, function (game) {
       game.removeClientBySocket(socket);
     });
